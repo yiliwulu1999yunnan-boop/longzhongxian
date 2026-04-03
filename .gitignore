@@ -22,3 +22,6 @@ Thumbs.db
 # 日志
 logs/
 *.log
+
+# Windows 下载元数据
+*:Zone.Identifier
