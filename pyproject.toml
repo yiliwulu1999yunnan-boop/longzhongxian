@@ -1,0 +1,23 @@
+[project]
+name = "longzhongxian-recruit"
+version = "0.1.0"
+description = "笼中仙 AI 招聘助手 - Boss直聘线上初筛"
+requires-python = ">=3.11"
+dependencies = []
+
+[project.optional-dependencies]
+dev = [
+    "ruff",
+    "mypy",
+    "pytest",
+]
+
+[tool.ruff]
+target-version = "py311"
+src = ["src", "tests"]
+
+[tool.mypy]
+python_version = "3.11"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
