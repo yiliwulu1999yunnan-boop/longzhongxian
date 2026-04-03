@@ -60,9 +60,11 @@ make typecheck   # mypy 类型检查
 
 ## 权限边界
 
-- `docs/` 目录只读，不修改、不删除、不新增
-- `storage_states/` 已在 .gitignore 中，任何情况不提交
-- `.env.local` / `.env.production` 不读取、不修改、不创建
+- `docs/` 目录只读，不修改、不删除、不新增（已定稿的需求和调研文档）
+- `docs/job-profiles/` 只读，岗位画像原始文档，只在提取规则时读取
+- `.env.local` 绝不修改、绝不读取内容、绝不输出到对话中
+- `storage_states/` 绝不提交到 Git，文件内容包含 Boss 直聘登录凭证
+- `.gitignore` 修改前先确认
 - 数据库 migration 文件生成后必须人工确认再执行
 
 ## 禁止事项
