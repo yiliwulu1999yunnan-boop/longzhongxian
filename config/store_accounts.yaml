@@ -1,0 +1,25 @@
+# 门店账号映射配置（V1 手动维护）
+# 每个条目描述一个门店的企业微信 → Boss 直聘账号映射关系
+#
+# 字段说明：
+#   wechat_userid:      企业微信 userid（店长）
+#   store_id:           门店 ID
+#   store_name:         门店名称
+#   boss_account_id:    Boss 直聘账号 ID
+#   storage_state_path: Playwright storageState 文件路径
+#   job_type:           当前招聘岗位类型
+
+stores:
+  - wechat_userid: "example_userid_001"
+    store_id: "store_001"
+    store_name: "昆明广场店"
+    boss_account_id: "boss_001"
+    storage_state_path: "./storage_states/boss_001.json"
+    job_type: "面点师"
+
+  # - wechat_userid: "example_userid_002"
+  #   store_id: "store_002"
+  #   store_name: "大理古城店"
+  #   boss_account_id: "boss_002"
+  #   storage_state_path: "./storage_states/boss_002.json"
+  #   job_type: "收银员"
