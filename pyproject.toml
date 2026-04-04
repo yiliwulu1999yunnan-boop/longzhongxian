@@ -3,13 +3,20 @@ name = "longzhongxian-recruit"
 version = "0.1.0"
 description = "笼中仙 AI 招聘助手 - Boss直聘线上初筛"
 requires-python = ">=3.11"
-dependencies = []
+dependencies = [
+    "pydantic-settings>=2.0",
+    "sqlalchemy[asyncio]>=2.0",
+    "asyncpg>=0.29",
+    "structlog>=24.0",
+]
 
 [project.optional-dependencies]
 dev = [
     "ruff",
     "mypy",
     "pytest",
+    "pytest-asyncio>=0.23",
+    "aiosqlite>=0.20",
 ]
 
 [tool.ruff]
