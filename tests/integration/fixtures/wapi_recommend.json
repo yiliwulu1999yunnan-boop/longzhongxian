@@ -1,0 +1,102 @@
+{
+  "code": 0,
+  "message": "Success",
+  "zpData": {
+    "hasMore": false,
+    "geekList": [
+      {
+        "encryptGeekId": "integ_geek_001",
+        "geekName": "集成测试候选人A",
+        "geekCard": {
+          "geekName": "集成测试候选人A",
+          "geekGender": 1,
+          "geekWorkYear": "3年",
+          "geekDegree": "中专",
+          "ageDesc": "28岁",
+          "expectLocationName": "昆明",
+          "salary": "4-5K",
+          "expectPositionName": "面点师",
+          "applyStatusDesc": "在职-月内到岗",
+          "geekDesc": {"content": "擅长中式面点制作"}
+        },
+        "detailUrl": "/web/frame/c-resume/?encryptGeekId=integ_geek_001",
+        "showWorks": [
+          {
+            "company": "某面馆",
+            "positionName": "面点师",
+            "workTime": "2年",
+            "startDate": "2022.01",
+            "endDate": "2024.01",
+            "responsibility": "负责面点制作",
+            "current": false
+          }
+        ],
+        "showEdus": [
+          {
+            "school": "昆明烹饪学校",
+            "major": "中式面点",
+            "degreeName": "中专",
+            "startDate": "2019.09",
+            "endDate": "2021.07"
+          }
+        ]
+      },
+      {
+        "encryptGeekId": "integ_geek_002",
+        "geekName": "集成测试候选人B",
+        "geekCard": {
+          "geekName": "集成测试候选人B",
+          "geekGender": 0,
+          "geekWorkYear": "5年",
+          "geekDegree": "高中",
+          "ageDesc": "32岁",
+          "expectLocationName": "昆明",
+          "salary": "5-6K",
+          "expectPositionName": "收银员",
+          "applyStatusDesc": "离职-随时到岗",
+          "geekDesc": {"content": "有收银和前台经验"}
+        },
+        "detailUrl": "/web/frame/c-resume/?encryptGeekId=integ_geek_002",
+        "showWorks": [
+          {
+            "company": "某超市",
+            "positionName": "收银员",
+            "workTime": "3年",
+            "startDate": "2020.03",
+            "endDate": "2023.03",
+            "responsibility": "收银、盘点",
+            "current": false
+          }
+        ],
+        "showEdus": [
+          {
+            "school": "某高中",
+            "major": "",
+            "degreeName": "高中",
+            "startDate": "2008.09",
+            "endDate": "2011.07"
+          }
+        ]
+      },
+      {
+        "encryptGeekId": "integ_geek_003",
+        "geekName": "集成测试候选人C",
+        "geekCard": {
+          "geekName": "集成测试候选人C",
+          "geekGender": 1,
+          "geekWorkYear": "1年",
+          "geekDegree": "初中及以下",
+          "ageDesc": "22岁",
+          "expectLocationName": "昆明",
+          "salary": "3-4K",
+          "expectPositionName": "洗碗工",
+          "applyStatusDesc": "在职-月内到岗",
+          "geekDesc": {"content": ""}
+        },
+        "detailUrl": "/web/frame/c-resume/?encryptGeekId=integ_geek_003",
+        "showWorks": [],
+        "showEdus": []
+      }
+    ]
+  }
+}

@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head><title>推荐牛人 - BOSS直聘</title></head>
+<body>
+  <div id="main">
+    <div class="recommend-list">
+      <p>Mock 推荐列表页面 — 用于集成测试</p>
+    </div>
+  </div>
+  <script>
+    // 模拟页面加载完成后自动发起 /wapi/ 请求
+    fetch("/wapi/zpblock/recommend/major/data?jobId=test_job_001&page=1")
+      .then(r => r.json())
+      .then(() => {});
+  </script>
+</body>
+</html>
