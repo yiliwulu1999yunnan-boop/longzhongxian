@@ -18,7 +18,7 @@ from src.common.storage_state import check_storage_state
 
 logger = get_logger(__name__)
 
-BOSS_RECOMMEND_URL = "https://www.zhipin.com/web/boss/recommend"
+BOSS_RECOMMEND_URL = "https://www.zhipin.com/web/chat/recommend"
 
 # 反检测基础配置
 _DEFAULT_USER_AGENT = (

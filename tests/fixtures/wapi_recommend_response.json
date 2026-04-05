@@ -1,0 +1,43 @@
+{
+  "code": 0,
+  "message": "Success",
+  "zpData": {
+    "hasMore": true,
+    "geekList": [
+      {
+        "encryptGeekId": "abc123def456",
+        "geekName": "杨**",
+        "geekCard": {
+          "geekName": "杨**",
+          "jobName": "面点师",
+          "cityName": "昆明",
+          "workYears": "3年",
+          "age": "28",
+          "education": "中专",
+          "gender": "1",
+          "expectPosition": "面点师/西点师",
+          "activeTime": "刚刚活跃"
+        },
+        "securityId": "sec_001",
+        "lid": "lid_001",
+        "detailUrl": "/web/frame/c-resume/?encryptGeekId=abc123def456&securityId=sec_001&lid=lid_001"
+      },
+      {
+        "encryptGeekId": "xyz789ghi012",
+        "geekName": "李*",
+        "geekCard": {
+          "geekName": "李*",
+          "jobName": "收银员",
+          "cityName": "大理"
+        },
+        "securityId": "sec_002",
+        "lid": "lid_002",
+        "detailUrl": "/web/frame/c-resume/?encryptGeekId=xyz789ghi012&securityId=sec_002&lid=lid_002"
+      },
+      {
+        "encryptGeekId": "min000basic01",
+        "geekName": "张*"
+      }
+    ]
+  }
+}
