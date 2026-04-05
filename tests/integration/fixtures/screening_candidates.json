@@ -1,0 +1,76 @@
+[
+  {
+    "encryptGeekId": "screen_geek_001",
+    "geekName": "筛选测试A",
+    "geekCard": {
+      "geekName": "筛选测试A",
+      "geekGender": 1,
+      "geekWorkYear": "3年",
+      "geekDegree": "高中",
+      "ageDesc": "28岁",
+      "expectLocationName": "昆明",
+      "salary": "4-5K",
+      "expectPositionName": "面点师",
+      "applyStatusDesc": "在职-月内到岗",
+      "geekDesc": {"content": "擅长中式面点制作，能接受凌晨上班"}
+    },
+    "detailUrl": "/web/frame/c-resume/?encryptGeekId=screen_geek_001",
+    "showWorks": [
+      {
+        "company": "某早餐店",
+        "positionName": "面点师",
+        "workTime": "2年",
+        "startDate": "2022.01",
+        "endDate": "2024.01",
+        "responsibility": "负责包子馒头制作",
+        "current": false
+      }
+    ],
+    "showEdus": [
+      {
+        "school": "某高中",
+        "major": "",
+        "degreeName": "高中",
+        "startDate": "2013.09",
+        "endDate": "2016.07"
+      }
+    ]
+  },
+  {
+    "encryptGeekId": "screen_geek_002",
+    "geekName": "筛选测试B",
+    "geekCard": {
+      "geekName": "筛选测试B",
+      "geekGender": 0,
+      "geekWorkYear": "5年",
+      "geekDegree": "中专",
+      "ageDesc": "32岁",
+      "expectLocationName": "昆明",
+      "salary": "5-6K",
+      "expectPositionName": "面点师",
+      "applyStatusDesc": "离职-随时到岗",
+      "geekDesc": {"content": "有中式面点和西点经验"}
+    },
+    "detailUrl": "/web/frame/c-resume/?encryptGeekId=screen_geek_002",
+    "showWorks": [
+      {
+        "company": "某酒店",
+        "positionName": "面点师",
+        "workTime": "3年",
+        "startDate": "2020.01",
+        "endDate": "2023.01",
+        "responsibility": "中西面点制作",
+        "current": false
+      }
+    ],
+    "showEdus": [
+      {
+        "school": "昆明烹饪学校",
+        "major": "中式面点",
+        "degreeName": "中专",
+        "startDate": "2010.09",
+        "endDate": "2012.07"
+      }
+    ]
+  }
+]
