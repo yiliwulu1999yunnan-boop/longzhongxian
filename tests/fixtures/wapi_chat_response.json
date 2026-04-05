@@ -1,0 +1,89 @@
+{
+  "code": 0,
+  "message": "Success",
+  "zpData": {
+    "hasMore": false,
+    "messages": [
+      {
+        "mid": "msg_001",
+        "type": 1,
+        "body": {
+          "text": "您好，我们是笼中仙，面点师岗位综合薪资4K-6K+，方便聊聊吗？"
+        },
+        "from": {
+          "uid": "boss_001",
+          "name": "张店长"
+        },
+        "to": {
+          "uid": "geek_001",
+          "name": "李*"
+        },
+        "time": 1712300000000
+      },
+      {
+        "mid": "msg_002",
+        "type": 1,
+        "body": {
+          "text": "你好，可以的，请问工作时间是怎样的？"
+        },
+        "from": {
+          "uid": "geek_001",
+          "name": "李*"
+        },
+        "to": {
+          "uid": "boss_001",
+          "name": "张店长"
+        },
+        "time": 1712300060000
+      },
+      {
+        "mid": "msg_003",
+        "type": 1,
+        "body": {
+          "text": "通班是凌晨3:30到13:30，早晚班是3:00-10:00和16:00-19:00"
+        },
+        "from": {
+          "uid": "boss_001",
+          "name": "张店长"
+        },
+        "to": {
+          "uid": "geek_001",
+          "name": "李*"
+        },
+        "time": 1712300120000
+      },
+      {
+        "mid": "msg_004",
+        "type": 3,
+        "body": {
+          "url": "https://img.bosszhipin.com/chat/image_001.jpg"
+        },
+        "from": {
+          "uid": "geek_001",
+          "name": "李*"
+        },
+        "to": {
+          "uid": "boss_001",
+          "name": "张店长"
+        },
+        "time": 1712300180000
+      },
+      {
+        "mid": "msg_005",
+        "type": 5,
+        "body": {
+          "text": "[表情]"
+        },
+        "from": {
+          "uid": "geek_001",
+          "name": "李*"
+        },
+        "to": {
+          "uid": "boss_001",
+          "name": "张店长"
+        },
+        "time": 1712300240000
+      }
+    ]
+  }
+}
