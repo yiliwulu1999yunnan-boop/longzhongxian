@@ -1,0 +1,75 @@
+[
+  {
+    "id": "sample_001",
+    "label": "推荐沟通",
+    "position_id": "mian_dian_shi",
+    "candidate_info": {
+      "age": 28,
+      "education": "高中",
+      "expected_salary": 5000,
+      "work_experience_years": 3.0,
+      "job_count_last_year": 1,
+      "resume_text": "在早餐店做了3年面点师，擅长中式面点、包子馒头制作，能接受凌晨上班"
+    },
+    "candidate_text": "张某，28岁，高中学历。过去3年在快餐早餐店担任面点师，负责包子、馒头、小笼包等中式面点制作。每天凌晨4点上班，已习惯早起。期望薪资5000元/月。工作稳定，上一份工作做了2年。"
+  },
+  {
+    "id": "sample_002",
+    "label": "不建议",
+    "position_id": "mian_dian_shi",
+    "reason": "频繁跳槽红线",
+    "candidate_info": {
+      "age": 25,
+      "education": "初中",
+      "expected_salary": 4500,
+      "work_experience_years": 1.0,
+      "job_count_last_year": 4,
+      "resume_text": "做过快餐店服务员、外卖骑手、工厂普工"
+    },
+    "candidate_text": "李某，25岁，初中学历。近一年换了4份工作：快餐店服务员2个月、外卖骑手3个月、工厂普工1个月、超市理货2个月。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_003",
+    "label": "不建议",
+    "position_id": "wai_pin_chu_bei",
+    "reason": "学历不达标",
+    "candidate_info": {
+      "age": 30,
+      "education": "小学",
+      "expected_salary": 5000,
+      "work_experience_years": 5.0,
+      "job_count_last_year": 0,
+      "resume_text": "在餐饮店工作多年，有管理经验"
+    },
+    "candidate_text": "王某，30岁，小学学历。有5年餐饮行业经验，曾担任领班。期望薪资5000元/月。"
+  },
+  {
+    "id": "sample_004",
+    "label": "可以看看",
+    "position_id": "mian_dian_shi",
+    "candidate_info": {
+      "age": 35,
+      "education": "初中",
+      "expected_salary": 4500,
+      "work_experience_years": 0,
+      "job_count_last_year": 1,
+      "resume_text": "之前在工厂做过操作工，想转行做餐饮"
+    },
+    "candidate_text": "赵某，35岁，初中学历。之前在工厂��了3年操作工，没有餐饮经验，但表示愿意学习，能接受凌晨上班。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_005",
+    "label": "不建议",
+    "position_id": "mian_dian_shi",
+    "reason": "期望薪资远超岗位范围",
+    "candidate_info": {
+      "age": 30,
+      "education": "大专",
+      "expected_salary": 12000,
+      "work_experience_years": 5.0,
+      "job_count_last_year": 0,
+      "resume_text": "高级面点师，五星级酒店工作经验"
+    },
+    "candidate_text": "陈某，30岁，大专学历。5年五星级酒店面点师经验。期望薪资12000元/月。"
+  }
+]
