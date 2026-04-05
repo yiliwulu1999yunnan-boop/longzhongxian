@@ -3,11 +3,16 @@
 from __future__ import annotations
 
 import re
+from typing import Any
 
 from src.c4_contact.command_parser import is_greeting_command
 from src.common.logger import get_logger
 
 logger = get_logger(__name__)
+
+# 分析指令回调类型
+AnalyzeCallback = Any  # Callable[[str, str], Awaitable[None]]
+_analyze_callback: AnalyzeCallback | None = None
 
 # 指令模式
 _PATTERN_SCREENING = re.compile(r"^筛选(候选人)?$")
@@ -80,4 +85,18 @@ async def dispatch_message(message: dict[str, str]) -> str:
         param=param,
     )
 
+    # 分析候选人指令 → E2 流程
+    if cmd_type == CommandType.ANALYZE and param and _analyze_callback is not None:
+        await _analyze_callback(from_user, param)
+
     return cmd_type
+
+
+def register_analyze_callback(callback: AnalyzeCallback) -> None:
+    """注册分析候选人指令的回调函数.
+
+    Args:
+        callback: async def callback(from_user: str, candidate_name: str) -> None
+    """
+    global _analyze_callback  # noqa: PLW0603
+    _analyze_callback = callback
