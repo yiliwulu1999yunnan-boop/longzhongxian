@@ -1,0 +1,160 @@
+# 岗位画像 YAML 配置文件 Schema 说明
+# 每个岗位类型一个 YAML 文件，文件名为岗位标识（snake_case）
+# 所有字段说明如下：
+
+schema_version: "1.0"
+
+fields:
+  # ===== 基础信息 =====
+  position_id:
+    type: string
+    required: true
+    description: "岗位唯一标识（snake_case），与文件名一致"
+
+  position_name:
+    type: string
+    required: true
+    description: "岗位中文名称"
+
+  position_category:
+    type: string
+    required: true
+    enum: ["基层岗位", "管理储备岗位"]
+    description: "岗位分类"
+
+  # ===== 硬规则阈值 =====
+  hard_rules:
+    type: object
+    required: true
+    description: "硬性筛选规则，不满足则直接淘汰"
+    fields:
+      age_range:
+        type: object
+        required: true
+        fields:
+          min:
+            type: integer
+            required: true
+            description: "最小年龄（含）"
+          max:
+            type: integer
+            required: true
+            description: "最大年龄（含）"
+          flexible_max:
+            type: integer
+            required: false
+            description: "弹性上限年龄（有相关经验可放宽到此值）"
+
+      education_min:
+        type: string
+        required: true
+        enum: ["不限", "小学", "初中", "中专", "高中", "大专", "本科"]
+        description: "最低学历要求"
+
+      salary_range:
+        type: object
+        required: true
+        description: "薪资区间（元/月）"
+        fields:
+          probation_min:
+            type: integer
+            required: true
+            description: "试用/学徒期最低月薪"
+          probation_max:
+            type: integer
+            required: true
+            description: "试用/学徒期最高月薪"
+          regular_min:
+            type: integer
+            required: true
+            description: "转正后最低月薪"
+          regular_max:
+            type: integer
+            required: true
+            description: "转正后最高月薪"
+
+      experience_required:
+        type: boolean
+        required: true
+        description: "是否强制要求相关工作经验"
+
+      experience_min_years:
+        type: number
+        required: false
+        description: "最低工作经验年限（仅 experience_required 为 true 时生效）"
+
+      accept_early_morning:
+        type: boolean
+        required: true
+        description: "是否必须接受早起（凌晨 3:00-6:30 上班）"
+
+      accept_store_transfer:
+        type: boolean
+        required: false
+        description: "是否必须接受调店"
+
+  # ===== 行业关键词 =====
+  industry_keywords:
+    type: object
+    required: true
+    description: "简历关键词匹配规则"
+    fields:
+      whitelist:
+        type: list[string]
+        required: true
+        description: "加分关键词（简历中出现则加分）"
+      blacklist:
+        type: list[string]
+        required: true
+        description: "减分/警示关键词（简历中出现则标记风险）"
+
+  # ===== 红线条件 =====
+  red_flags:
+    type: list[string]
+    required: true
+    description: "一票否决条件，命中任意一条则标记为不建议"
+
+  # ===== LLM 评估配置 =====
+  llm_evaluation:
+    type: object
+    required: true
+    description: "LLM 软性评估配置"
+    fields:
+      dimensions:
+        type: list[object]
+        required: true
+        description: "评估维度列表"
+        item_fields:
+          name:
+            type: string
+            required: true
+            description: "维度名称"
+          weight:
+            type: integer
+            required: true
+            description: "权重分值"
+          description:
+            type: string
+            required: true
+            description: "维度说明"
+          required_for:
+            type: list[string]
+            required: false
+            description: "仅对指定岗位生效的特殊维度"
+
+      passing_score:
+        type: integer
+        required: true
+        description: "合格分数线"
+
+      prompt_template:
+        type: string
+        required: true
+        description: "LLM 评估 prompt 模板，支持变量替换：{position_name}, {hard_rules_summary}, {dimensions_detail}"
+
+  # ===== 打招呼模板消息 =====
+  greeting_template:
+    type: string
+    required: true
+    max_length: 150
+    description: "Boss 直聘主动打招呼消息模板（≤150 字）"
