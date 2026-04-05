@@ -52,3 +52,22 @@ def get_account_by_wechat_userid(
                 job_type=acc.get("job_type", ""),
             )
     raise AccountNotFoundError(f"未找到企业微信 userid={userid} 的账号映射")
+
+
+def get_account_by_boss_id(
+    boss_account_id: str,
+    yaml_path: str | Path = "config/store_accounts.yaml",
+) -> StoreAccountInfo:
+    """根据 Boss 账号 ID 查找门店账号映射."""
+    accounts = load_store_accounts(yaml_path)
+    for acc in accounts:
+        if acc.get("boss_account_id") == boss_account_id:
+            return StoreAccountInfo(
+                wechat_userid=acc["wechat_userid"],
+                store_id=acc["store_id"],
+                store_name=acc.get("store_name", ""),
+                boss_account_id=acc["boss_account_id"],
+                storage_state_path=acc["storage_state_path"],
+                job_type=acc.get("job_type", ""),
+            )
+    raise AccountNotFoundError(f"未找到 Boss 账号={boss_account_id} 的账号映射")

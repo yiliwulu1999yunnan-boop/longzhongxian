@@ -4,6 +4,7 @@ import pytest
 
 from src.common.account_mapping import (
     AccountNotFoundError,
+    get_account_by_boss_id,
     get_account_by_wechat_userid,
     load_store_accounts,
 )
@@ -64,6 +65,20 @@ def test_account_not_found(yaml_path: str) -> None:
     """验证未找到 userid 时抛出 AccountNotFoundError."""
     with pytest.raises(AccountNotFoundError, match="user_999"):
         get_account_by_wechat_userid("user_999", yaml_path)
+
+
+def test_get_account_by_boss_id(yaml_path: str) -> None:
+    """验证根据 boss_account_id 能查到对应的门店账号."""
+    info = get_account_by_boss_id("boss_001", yaml_path)
+    assert info.wechat_userid == "user_001"
+    assert info.store_id == "store_001"
+    assert info.store_name == "昆明广场店"
+
+
+def test_get_account_by_boss_id_not_found(yaml_path: str) -> None:
+    """验证 boss_account_id 未找到时抛出 AccountNotFoundError."""
+    with pytest.raises(AccountNotFoundError, match="boss_999"):
+        get_account_by_boss_id("boss_999", yaml_path)
 
 
 def test_yaml_file_not_found() -> None:
