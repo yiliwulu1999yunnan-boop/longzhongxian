@@ -12,6 +12,7 @@ from src.c3_push.wechat_callback import (
     parse_text_message,
 )
 from src.common.config import get_settings
+from src.common.dispatcher import dispatch_message
 from src.common.logger import get_logger, setup_logging
 from src.common.task_queue import TaskQueue
 
@@ -19,16 +20,6 @@ logger = get_logger(__name__)
 
 # 全局任务队列（在 lifespan 中初始化）
 task_queue: TaskQueue | None = None
-
-
-async def _dispatch_message(message: dict[str, str]) -> None:
-    """消息分发占位 — 后续 C3.1/C4.1 实现具体逻辑."""
-    logger.info(
-        "message_dispatched",
-        from_user=message.get("from_user", ""),
-        msg_type=message.get("msg_type", ""),
-        content=message.get("content", ""),
-    )
 
 
 @asynccontextmanager
@@ -104,7 +95,7 @@ async def wechat_callback_receive(
         return "decrypt failed"
 
     message = parse_text_message(decrypted_xml)
-    await _dispatch_message(message)
+    await dispatch_message(message)
     return "success"
 
 

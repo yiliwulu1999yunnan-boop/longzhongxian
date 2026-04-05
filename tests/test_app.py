@@ -105,7 +105,7 @@ def test_wechat_callback_receive(
         f"<Nonce>{nonce}</Nonce></xml>"
     )
 
-    with patch("src.app._dispatch_message", new_callable=AsyncMock) as mock_dispatch:
+    with patch("src.app.dispatch_message", new_callable=AsyncMock) as mock_dispatch:
         resp = client.post(
             "/wechat/callback",
             content=post_xml,
