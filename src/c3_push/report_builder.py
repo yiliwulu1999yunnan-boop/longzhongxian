@@ -38,12 +38,10 @@ class ReportResult:
 
 
 def _mask_name(name: str) -> str:
-    """姓名脱敏：保留姓，其余用 * 替代."""
+    """姓名脱敏：保留姓 + 先生/女士，无法判断性别时用 *."""
     if not name:
         return "匿名"
-    if len(name) == 1:
-        return name
-    return name[0] + "*" * (len(name) - 1)
+    return name[0] + "先生"
 
 
 def build_report(
@@ -75,46 +73,47 @@ def build_report(
     total = len(candidates)
     number_mapping: dict[int, int] = {}
 
-    # 标题
+    # 标题（# 一级标题，最大字号）
     title = "AI 筛选报告"
     if job_name:
-        title = f"AI 筛选报告 - {job_name}"
+        title = f"AI 筛选报告 · {job_name}"
 
-    lines: list[str] = [f"## {title}"]
+    lines: list[str] = [f"#### {title}"]
 
-    # 总览
+    # 总览（灰色辅助文字）
     lines.append(
-        f"共筛选 **{total}** 人："
-        f"推荐沟通 **{len(recommend)}**，"
-        f"可以看看 **{len(maybe)}**，"
-        f"不建议 **{len(reject)}**"
+        f'<font color="comment">'
+        f"共 {total} 人：推荐 {len(recommend)} / 观望 {len(maybe)} / 不建议 {len(reject)}"
+        f"</font>"
     )
 
     # 推荐候选人摘要（带编号）
     if recommend:
         lines.append("")
-        lines.append("### 推荐沟通")
+        lines.append(f'**推荐沟通（{len(recommend)} 人）**')
         for idx, c in enumerate(recommend, start=1):
             number_mapping[idx] = c.candidate_id
             entry = _format_candidate_entry(idx, c)
             lines.append(entry)
     else:
         lines.append("")
-        lines.append("### 推荐沟通")
         lines.append("本次无推荐沟通候选人")
 
-    # 可以看看 / 不建议只显示数字
+    # 可以看看 / 不建议：有数据才显示
     if maybe:
         lines.append("")
-        lines.append(f"### 可以看看（{len(maybe)} 人）")
+        lines.append(
+            f'<font color="comment">观望 {len(maybe)} 人，暂不展开</font>'
+        )
     if reject:
-        lines.append("")
-        lines.append(f"### 不建议（{len(reject)} 人）")
+        lines.append(
+            f'<font color="comment">不建议 {len(reject)} 人</font>'
+        )
 
     # 操作提示
     if recommend:
         lines.append("")
-        lines.append("> 回复编号发起沟通，如「发1、3」")
+        lines.append('> 回复编号发起沟通，如「发1、3」或「全发」')
 
     markdown = _truncate_markdown("\n".join(lines))
 
@@ -133,25 +132,26 @@ def _format_candidate_entry(idx: int, c: ScoredCandidate) -> str:
     masked = _mask_name(c.name)
     merged = c.merged
 
-    # 基本信息行
-    info_parts = [f"**{idx}. {masked}**"]
+    # 候选人名（加粗）+ 基本信息（灰色辅助）
+    meta_parts: list[str] = []
     if c.work_years:
-        info_parts.append(c.work_years)
+        meta_parts.append(c.work_years)
     if c.age:
-        info_parts.append(c.age)
-    header = " | ".join(info_parts)
+        meta_parts.append(c.age)
+    meta = f' <font color="comment">{" · ".join(meta_parts)}</font>' if meta_parts else ""
+    header = f"**{idx}. {masked}**{meta}"
 
     parts = [header]
 
-    # 亮点
+    # 亮点（绿色）
     if merged.highlights:
         hl_text = "；".join(merged.highlights[:3])
-        parts.append(f"亮点：{hl_text}")
+        parts.append(f'<font color="info">{hl_text}</font>')
 
-    # 风险
+    # 风险（橙色警告）
     if merged.risks:
         risk_text = "；".join(merged.risks[:2])
-        parts.append(f"⚠️ {risk_text}")
+        parts.append(f'<font color="warning">⚠️ {risk_text}</font>')
 
     return "\n".join(parts)
 

@@ -38,13 +38,13 @@ def _make_candidate(
 
 class TestMaskName:
     def test_normal_name(self) -> None:
-        assert _mask_name("张三") == "张*"
+        assert _mask_name("张三") == "张先生"
 
     def test_three_char_name(self) -> None:
-        assert _mask_name("欧阳锋") == "欧**"
+        assert _mask_name("欧阳锋") == "欧先生"
 
     def test_single_char(self) -> None:
-        assert _mask_name("张") == "张"
+        assert _mask_name("张") == "张先生"
 
     def test_empty_name(self) -> None:
         assert _mask_name("") == "匿名"
@@ -61,7 +61,7 @@ class TestBuildReportZeroRecommend:
         assert result.maybe_count == 0
         assert result.reject_count == 0
         assert result.number_mapping == {}
-        assert "共筛选 **0** 人" in result.markdown
+        assert "共 0 人" in result.markdown
         assert "本次无推荐沟通候选人" in result.markdown
 
     def test_only_reject(self) -> None:
@@ -75,6 +75,9 @@ class TestBuildReportZeroRecommend:
         assert result.reject_count == 2
         assert result.number_mapping == {}
         assert "本次无推荐沟通候选人" in result.markdown
+        # 无观望数据时不显示独立的观望区块，但总览行仍包含
+        assert "观望 0 人，暂不展开" not in result.markdown
+        assert "不建议 2 人" in result.markdown
 
     def test_only_maybe(self) -> None:
         candidates = [_make_candidate(1, "赵六", "可以看看")]
@@ -120,8 +123,8 @@ class TestBuildReportMultipleRecommend:
         assert "服务员" in md
 
         # 编号出现在报告中
-        assert "**1. 张*" in md
-        assert "**2. 李*" in md
+        assert "**1. 张先生**" in md
+        assert "**2. 李先生**" in md
 
         # 亮点和风险出现
         assert "3年餐饮经验" in md
@@ -131,9 +134,9 @@ class TestBuildReportMultipleRecommend:
         assert "3年" in md
         assert "5年" in md
 
-        # 可以看看和不建议只显示人数
-        assert "可以看看（1 人）" in md
-        assert "不建议（1 人）" in md
+        # 可以看看和不建议以灰色辅助文字显示
+        assert "观望 1 人" in md
+        assert "不建议 1 人" in md
 
         # 操作提示
         assert "发1、3" in md
@@ -148,7 +151,7 @@ class TestBuildReportMultipleRecommend:
         result = build_report(candidates)
         assert result.recommend_count == 1
         assert result.number_mapping == {1: 100}
-        assert "**1. 孙*" in result.markdown
+        assert "**1. 孙先生**" in result.markdown
 
 
 class TestMarkdownFormat:
@@ -157,11 +160,11 @@ class TestMarkdownFormat:
     def test_uses_heading_syntax(self) -> None:
         result = build_report([], job_name="店长")
         md = result.markdown
-        assert md.startswith("## AI 筛选报告 - 店长")
+        assert md.startswith("#### AI 筛选报告 · 店长")
 
     def test_no_job_name(self) -> None:
         result = build_report([])
-        assert "## AI 筛选报告\n" in result.markdown
+        assert "#### AI 筛选报告\n" in result.markdown
 
     def test_bold_markers(self) -> None:
         candidates = [_make_candidate(1, "张三", "推荐沟通")]
