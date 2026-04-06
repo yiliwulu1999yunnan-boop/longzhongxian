@@ -255,6 +255,8 @@ class SummaryGenerator:
 
         user_prompt = _build_user_prompt(chat_text, resume_info)
 
+        logger.info("summary_llm_start", model=self._model, chat_chars=len(chat_text))
+
         try:
             response = await self._client.chat.completions.create(
                 model=self._model,
@@ -265,11 +267,16 @@ class SummaryGenerator:
                 temperature=0.1,
             )
         except (APITimeoutError, APIConnectionError) as exc:
-            logger.warning("LLM 汇总 API 调用失败: %s", exc)
+            logger.warning("summary_llm_api_failed", error=str(exc))
             return SummaryResult(error=f"API 调用失败: {exc}")
         except Exception as exc:
-            logger.exception("LLM 汇总 API 未知错误")
+            logger.error("summary_llm_unknown_error", error=str(exc), exc_info=True)
             return SummaryResult(error=f"未知错误: {exc}")
 
         raw_output = response.choices[0].message.content or ""
-        return parse_summary_response(raw_output)
+        result = parse_summary_response(raw_output)
+        if result.error:
+            logger.warning("summary_llm_parse_failed", error=result.error)
+        else:
+            logger.info("summary_llm_done", recommendation=result.interview_recommendation)
+        return result

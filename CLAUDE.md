@@ -50,6 +50,7 @@ make typecheck   # mypy 类型检查
 - 提交前用 `git diff` 确认没有无关改动
 - 开始任务前先阅读 `lessons.md`，避免重复已知错误
 - 犯错被纠正后，立即在 `lessons.md` 追加一行记录
+- 每个关键步骤都要有日志输出（使用 `src/common/logger.py` 的 `get_logger`）。关键步骤包括：外部 API 调用（开始/成功/失败）、pipeline 进出、数据库写入、业务决策点（如评分结论、规则命中）。新建或修改 `src/` 下的业务模块时，确保模块顶部有 `logger = get_logger(__name__)`，关键路径有 `logger.info()` / `logger.warning()` / `logger.error()`
 
 ## 命名规范
 

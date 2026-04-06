@@ -80,8 +80,10 @@ async def _try_send_on_chat_page(page: Page, message: str) -> GreetingResult:
 
     # 检查是否弹出付费弹窗
     if await _check_paywall(page):
+        logger.warning("greeting_quota_exhausted_after_send")
         return GreetingResult.QUOTA_EXHAUSTED
 
+    logger.info("greeting_send_success")
     return GreetingResult.SUCCESS
 
 

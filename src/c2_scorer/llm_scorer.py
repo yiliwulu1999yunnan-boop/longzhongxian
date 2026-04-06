@@ -3,7 +3,6 @@
 from __future__ import annotations
 
 import json
-import logging
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
@@ -11,8 +10,9 @@ from openai import AsyncOpenAI, APITimeoutError, APIConnectionError
 
 from src.c2_scorer.profile_loader import JobProfile
 from src.common.config import get_settings
+from src.common.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 _DEFAULT_MODEL = "deepseek-chat"
 _DEFAULT_TIMEOUT = 30.0
@@ -195,6 +195,7 @@ class LlmScorer:
             API 异常时返回带 error 字段的降级结果。
         """
         system_prompt, user_content = render_prompt(profile, candidate_text)
+        logger.info("llm_evaluate_start", position=profile.position_name, model=self._model)
 
         try:
             response = await self._client.chat.completions.create(
@@ -209,11 +210,20 @@ class LlmScorer:
                 temperature=0.1,
             )
         except (APITimeoutError, APIConnectionError) as exc:
-            logger.warning("LLM API 调用失败: %s", exc)
+            logger.warning("llm_evaluate_api_failed", error=str(exc))
             return LlmEvalResult(error=f"API 调用失败: {exc}")
         except Exception as exc:
-            logger.exception("LLM API 未知错误")
+            logger.error("llm_evaluate_unknown_error", error=str(exc), exc_info=True)
             return LlmEvalResult(error=f"未知错误: {exc}")
 
         raw_output = response.choices[0].message.content or ""
-        return parse_llm_response(raw_output, profile)
+        result = parse_llm_response(raw_output, profile)
+        if result.error:
+            logger.warning("llm_evaluate_parse_failed", error=result.error)
+        else:
+            logger.info(
+                "llm_evaluate_done",
+                score=result.weighted_total,
+                verdict=result.verdict,
+            )
+        return result

@@ -6,6 +6,9 @@ from dataclasses import dataclass, field
 from typing import Optional
 
 from src.c2_scorer.profile_loader import JobProfile
+from src.common.logger import get_logger
+
+logger = get_logger(__name__)
 
 # 学历等级映射（低 → 高）
 _EDUCATION_RANK: dict[str, int] = {
@@ -74,6 +77,18 @@ def evaluate_hard_rules(
 
     is_reject = any(r.is_red_flag and r.passed is False for r in results)
     passed = not any(r.passed is False for r in results)
+
+    failed_rules = [r.rule_name for r in results if r.passed is False]
+    skipped_rules = [r.rule_name for r in results if r.passed is None]
+    logger.info(
+        "hard_rules_evaluated",
+        passed=passed,
+        is_reject=is_reject,
+        failed=failed_rules,
+        skipped=skipped_rules,
+        whitelist_hits=wl_hits,
+        blacklist_hits=bl_hits,
+    )
 
     return HardRuleVerdict(
         passed=passed,

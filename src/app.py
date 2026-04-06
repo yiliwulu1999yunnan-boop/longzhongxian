@@ -12,7 +12,12 @@ from src.c3_push.wechat_callback import (
     parse_text_message,
 )
 from src.common.config import get_settings
-from src.common.dispatcher import dispatch_message
+from src.common.dispatcher import (
+    dispatch_message,
+    register_analyze_callback,
+    register_greeting_callback,
+    register_screening_callback,
+)
 from src.common.logger import get_logger, setup_logging
 from src.common.task_queue import TaskQueue
 
@@ -29,12 +34,62 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     settings = get_settings()
     setup_logging(settings.log_level)
     task_queue = TaskQueue()
+
+    # 注册指令回调 — 通过 task_queue 异步执行
+    async def _on_screening(from_user: str) -> None:
+        assert task_queue is not None
+        await task_queue.submit(
+            _run_screening_task, from_user, account_id=from_user,
+        )
+
+    async def _on_greeting(from_user: str, content: str) -> None:
+        assert task_queue is not None
+        await task_queue.submit(
+            _run_greeting_task, from_user, content, account_id=from_user,
+        )
+
+    async def _on_analyze(from_user: str, candidate_name: str) -> None:
+        assert task_queue is not None
+        await task_queue.submit(
+            _run_analyze_task, from_user, candidate_name, account_id=from_user,
+        )
+
+    register_screening_callback(_on_screening)
+    register_greeting_callback(_on_greeting)
+    register_analyze_callback(_on_analyze)
+
     logger.info("app_started")
     yield
+
+    # 清理回调，防止测试间状态泄漏
+    register_screening_callback(None)
+    register_greeting_callback(None)
+    register_analyze_callback(None)
     logger.info("app_stopped")
 
 
 app = FastAPI(title="笼中仙 AI 招聘助手", version="0.1.0", lifespan=lifespan)
+
+
+# ───────── 占位任务函数（养号期不跑真实 pipeline） ─────────
+
+
+async def _run_screening_task(from_user: str) -> str:
+    """筛选任务占位 — 后续接入 run_screening()."""
+    logger.info("screening_task_running", from_user=from_user)
+    return "screening_placeholder"
+
+
+async def _run_greeting_task(from_user: str, content: str) -> str:
+    """打招呼任务占位 — 后续接入 run_c4_pipeline()."""
+    logger.info("greeting_task_running", from_user=from_user, content=content)
+    return "greeting_placeholder"
+
+
+async def _run_analyze_task(from_user: str, candidate_name: str) -> str:
+    """分析任务占位 — 后续接入 run_e2_pipeline()."""
+    logger.info("analyze_task_running", from_user=from_user, candidate=candidate_name)
+    return "analyze_placeholder"
 
 
 def _get_crypto() -> WechatCallbackCrypto:

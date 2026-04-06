@@ -10,8 +10,12 @@ from src.common.logger import get_logger
 
 logger = get_logger(__name__)
 
-# 分析指令回调类型
-AnalyzeCallback = Any  # Callable[[str, str], Awaitable[None]]
+# 回调类型
+ScreeningCallback = Any  # Callable[[str], Awaitable[None]]  — receives from_user
+GreetingCallback = Any  # Callable[[str, str], Awaitable[None]]  — receives from_user, content
+AnalyzeCallback = Any  # Callable[[str, str], Awaitable[None]]  — receives from_user, param
+_screening_callback: ScreeningCallback | None = None
+_greeting_callback: GreetingCallback | None = None
 _analyze_callback: AnalyzeCallback | None = None
 
 # 指令模式
@@ -85,18 +89,30 @@ async def dispatch_message(message: dict[str, str]) -> str:
         param=param,
     )
 
-    # 分析候选人指令 → E2 流程
-    if cmd_type == CommandType.ANALYZE and param and _analyze_callback is not None:
+    # 路由到对应回调
+    if cmd_type == CommandType.SCREENING and _screening_callback is not None:
+        await _screening_callback(from_user)
+    elif cmd_type == CommandType.GREETING and _greeting_callback is not None:
+        await _greeting_callback(from_user, content)
+    elif cmd_type == CommandType.ANALYZE and param and _analyze_callback is not None:
         await _analyze_callback(from_user, param)
 
     return cmd_type
 
 
-def register_analyze_callback(callback: AnalyzeCallback) -> None:
-    """注册分析候选人指令的回调函数.
+def register_screening_callback(callback: ScreeningCallback | None) -> None:
+    """注册筛选指令的回调函数."""
+    global _screening_callback  # noqa: PLW0603
+    _screening_callback = callback
 
-    Args:
-        callback: async def callback(from_user: str, candidate_name: str) -> None
-    """
+
+def register_greeting_callback(callback: GreetingCallback | None) -> None:
+    """注册打招呼指令的回调函数."""
+    global _greeting_callback  # noqa: PLW0603
+    _greeting_callback = callback
+
+
+def register_analyze_callback(callback: AnalyzeCallback | None) -> None:
+    """注册分析候选人指令的回调函数."""
     global _analyze_callback  # noqa: PLW0603
     _analyze_callback = callback

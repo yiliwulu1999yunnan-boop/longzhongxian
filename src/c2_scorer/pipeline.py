@@ -11,7 +11,10 @@ from src.c2_scorer.llm_scorer import LlmEvalResult, LlmScorer
 from src.c2_scorer.score_merger import MergedVerdict, merge_scores
 from src.c2_scorer.snapshot_store import save_snapshot
 from src.c2_scorer.profile_loader import JobProfile
+from src.common.logger import get_logger
 from src.common.models import ScoringSnapshot
+
+logger = get_logger(__name__)
 
 
 class C2Result:
@@ -62,18 +65,40 @@ async def run_c2_pipeline(
     Returns:
         C2Result 包含各阶段输出.
     """
+    logger.info("c2_pipeline_start", candidate_id=candidate_id, position=profile.position_name)
+
     # 1. 硬规则过滤
     hard_verdict = evaluate_hard_rules(candidate_info, profile)
+    logger.info(
+        "c2_hard_rules_done",
+        candidate_id=candidate_id,
+        passed=hard_verdict.passed,
+        is_reject=hard_verdict.is_reject,
+    )
 
     # 2. 硬规则不通过 → 跳过 LLM（红线或普通不通过都不需要 LLM）
     llm_result: Optional[LlmEvalResult] = None
     if hard_verdict.passed:
         # 3. LLM 评估
         llm_result = await llm_scorer.evaluate(profile, candidate_text)
+        logger.info(
+            "c2_llm_done",
+            candidate_id=candidate_id,
+            score=llm_result.weighted_total if llm_result else None,
+            error=llm_result.error if llm_result else None,
+        )
+    else:
+        logger.info("c2_llm_skipped", candidate_id=candidate_id, reason="hard_rules_failed")
 
     # 4. 合并
     merged = merge_scores(
         hard_verdict, llm_result, profile.llm_evaluation.passing_score
+    )
+    logger.info(
+        "c2_merged",
+        candidate_id=candidate_id,
+        verdict=merged.final_verdict,
+        reason=merged.reason,
     )
 
     # 5. 存储快照
@@ -85,6 +110,7 @@ async def run_c2_pipeline(
         merged=merged,
         job_profile_version=profile.config_version,
     )
+    logger.info("c2_pipeline_done", candidate_id=candidate_id, verdict=merged.final_verdict)
 
     return C2Result(
         hard_verdict=hard_verdict,
