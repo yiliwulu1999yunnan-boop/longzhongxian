@@ -30,7 +30,7 @@ async def check_postgres(database_url: str) -> bool:
 
     try:
         from sqlalchemy.ext.asyncio import create_async_engine
-        from sqlalchemy.text import text
+        from sqlalchemy import text
 
         engine = create_async_engine(database_url, echo=False)
         async with engine.begin() as conn:
