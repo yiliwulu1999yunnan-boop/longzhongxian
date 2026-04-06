@@ -6,6 +6,10 @@ from typing import Optional
 import yaml
 from pydantic import BaseModel, Field, field_validator
 
+from src.common.logger import get_logger
+
+logger = get_logger(__name__)
+
 _DEFAULT_PROFILES_DIR = Path(__file__).resolve().parents[2] / "config" / "job_profiles"
 
 
@@ -117,11 +121,14 @@ def load_profile(
         raise ProfileLoadError(f"YAML 顶层应为字典，实际为 {type(raw).__name__}")
 
     try:
-        return JobProfile(**raw)
+        profile = JobProfile(**raw)
     except Exception as exc:
         raise ProfileLoadError(
             f"配置校验失败 ({position_id}): {exc}"
         ) from exc
+
+    logger.info("profile_loaded", position_id=position_id, position_name=profile.position_name)
+    return profile
 
 
 def load_all_profiles(

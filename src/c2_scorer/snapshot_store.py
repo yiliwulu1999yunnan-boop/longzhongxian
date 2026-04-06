@@ -10,7 +10,10 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from src.c2_scorer.hard_rules import HardRuleVerdict
 from src.c2_scorer.llm_scorer import LlmEvalResult
 from src.c2_scorer.score_merger import MergedVerdict
+from src.common.logger import get_logger
 from src.common.models import ScoringSnapshot
+
+logger = get_logger(__name__)
 
 
 async def save_snapshot(
@@ -47,6 +50,12 @@ async def save_snapshot(
     )
     session.add(snapshot)
     await session.flush()
+    logger.info(
+        "snapshot_saved",
+        candidate_id=candidate_id,
+        verdict=merged.final_verdict,
+        snapshot_id=snapshot.id,
+    )
     return snapshot
 
 

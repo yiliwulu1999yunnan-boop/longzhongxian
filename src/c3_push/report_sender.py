@@ -2,16 +2,15 @@
 
 from __future__ import annotations
 
-import logging
-
 from src.c3_push.channel import PushChannel
 from src.c3_push.report_builder import ReportResult
 from src.common.account_mapping import (
     StoreAccountInfo,
     get_account_by_boss_id,
 )
+from src.common.logger import get_logger
 
-logger = logging.getLogger(__name__)
+logger = get_logger(__name__)
 
 # 最大重试次数
 _MAX_RETRIES = 2
@@ -53,15 +52,16 @@ async def send_report(
         try:
             await channel.send_markdown(user_id, report.markdown)
             logger.info(
-                "报告推送成功: userid=%s, boss=%s, attempt=%d",
-                user_id, boss_account_id, attempt,
+                "report_send_ok",
+                userid=user_id, boss=boss_account_id, attempt=attempt,
             )
             return account
         except Exception as exc:
             last_error = exc
             logger.warning(
-                "报告推送失败 (attempt %d/%d): userid=%s, error=%s",
-                attempt, max_retries + 1, user_id, exc,
+                "report_send_retry",
+                attempt=attempt, max_attempts=max_retries + 1,
+                userid=user_id, error=str(exc),
             )
 
     raise ReportSendError(

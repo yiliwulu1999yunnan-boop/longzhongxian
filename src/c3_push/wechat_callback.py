@@ -14,6 +14,10 @@ import xml.etree.ElementTree as ET
 
 from Crypto.Cipher import AES
 
+from src.common.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class CallbackCryptoError(Exception):
     """回调消息加解密失败."""
@@ -121,7 +125,9 @@ class WechatCallbackCrypto:
             CallbackCryptoError: 签名校验或解密失败.
         """
         if not self.verify_signature(msg_signature, timestamp, nonce, echostr):
+            logger.warning("callback_verify_signature_mismatch")
             raise CallbackCryptoError("回调验证签名不匹配")
+        logger.info("callback_verify_ok")
         return self.decrypt(echostr)
 
     def decrypt_message(
@@ -143,8 +149,10 @@ class WechatCallbackCrypto:
 
         encrypt_text = encrypt_node.text
         if not self.verify_signature(msg_signature, timestamp, nonce, encrypt_text):
+            logger.warning("callback_message_signature_mismatch")
             raise CallbackCryptoError("消息签名不匹配")
 
+        logger.info("callback_message_decrypted")
         return self.decrypt(encrypt_text)
 
 

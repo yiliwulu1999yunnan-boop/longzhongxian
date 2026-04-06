@@ -7,6 +7,9 @@ from typing import Optional
 
 from src.c2_scorer.hard_rules import HardRuleVerdict
 from src.c2_scorer.llm_scorer import LlmEvalResult
+from src.common.logger import get_logger
+
+logger = get_logger(__name__)
 
 
 @dataclass
@@ -57,6 +60,7 @@ def merge_scores(
             r.detail for r in hard_verdict.results
             if r.is_red_flag and r.passed is False
         ]
+        logger.info("merge_verdict", verdict="不建议", reason="red_flag_reject")
         return MergedVerdict(
             final_verdict="不建议",
             reason=f"触发红线规则: {'; '.join(reject_details)}",
@@ -69,6 +73,7 @@ def merge_scores(
         fail_details = [
             r.detail for r in hard_verdict.results if r.passed is False
         ]
+        logger.info("merge_verdict", verdict="不建议", reason="hard_rules_failed")
         return MergedVerdict(
             final_verdict="不建议",
             reason=f"硬规则不通过: {'; '.join(fail_details)}",
@@ -83,6 +88,7 @@ def merge_scores(
     # 3. LLM 未提供或出错 → 降级
     if llm_result is None or llm_result.error:
         error_msg = llm_result.error if llm_result else "LLM 未执行"
+        logger.info("merge_verdict", verdict="可以看看", reason="llm_degraded")
         return MergedVerdict(
             final_verdict="可以看看",
             reason=f"硬规则通过，LLM 评估不可用（{error_msg}），降级处理",
@@ -108,6 +114,7 @@ def merge_scores(
         verdict = "不建议"
         reason = f"LLM 总分 {score:.1f} < 合格线 {passing_score}"
 
+    logger.info("merge_verdict", verdict=verdict, llm_score=score, passing_score=passing_score)
     return MergedVerdict(
         final_verdict=verdict,
         reason=reason,

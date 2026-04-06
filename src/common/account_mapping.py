@@ -6,6 +6,10 @@ from typing import Any
 
 import yaml
 
+from src.common.logger import get_logger
+
+logger = get_logger(__name__)
+
 
 class AccountNotFoundError(Exception):
     """未找到对应的门店账号映射."""
@@ -43,6 +47,7 @@ def get_account_by_wechat_userid(
     accounts = load_store_accounts(yaml_path)
     for acc in accounts:
         if acc.get("wechat_userid") == userid:
+            logger.info("account_found_by_wechat", userid=userid, store_id=acc.get("store_id"))
             return StoreAccountInfo(
                 wechat_userid=acc["wechat_userid"],
                 store_id=acc["store_id"],
@@ -51,6 +56,7 @@ def get_account_by_wechat_userid(
                 storage_state_path=acc["storage_state_path"],
                 job_type=acc.get("job_type", ""),
             )
+    logger.warning("account_not_found_by_wechat", userid=userid)
     raise AccountNotFoundError(f"未找到企业微信 userid={userid} 的账号映射")
 
 
@@ -62,6 +68,7 @@ def get_account_by_boss_id(
     accounts = load_store_accounts(yaml_path)
     for acc in accounts:
         if acc.get("boss_account_id") == boss_account_id:
+            logger.info("account_found_by_boss", boss_account_id=boss_account_id, store_id=acc.get("store_id"))
             return StoreAccountInfo(
                 wechat_userid=acc["wechat_userid"],
                 store_id=acc["store_id"],
@@ -70,4 +77,5 @@ def get_account_by_boss_id(
                 storage_state_path=acc["storage_state_path"],
                 job_type=acc.get("job_type", ""),
             )
+    logger.warning("account_not_found_by_boss", boss_account_id=boss_account_id)
     raise AccountNotFoundError(f"未找到 Boss 账号={boss_account_id} 的账号映射")

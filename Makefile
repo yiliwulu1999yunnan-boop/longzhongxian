@@ -5,6 +5,7 @@ install:
 
 lint:
 	ruff check src/ tests/
+	python scripts/check_logger.py
 
 lint-fix:
 	ruff check --fix src/ tests/
