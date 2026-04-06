@@ -1,5 +1,6 @@
 """推荐列表 /wapi/ 拦截 + 候选人数据解析."""
 
+import random
 from typing import Any
 
 from playwright.async_api import Page, Response
@@ -16,7 +17,8 @@ _RECOMMEND_API_PATTERNS = [
     "/wapi/batch/requests",
 ]
 
-_DEFAULT_SCROLL_INTERVAL_MS = 2000
+_DEFAULT_SCROLL_MIN_MS = 1500
+_DEFAULT_SCROLL_MAX_MS = 3000
 
 
 def parse_recommend_response(data: dict[str, Any]) -> list[RecommendCandidate]:
@@ -95,10 +97,12 @@ class RecommendScraper:
         self,
         browser_manager: BrowserManager,
         *,
-        scroll_interval_ms: int = _DEFAULT_SCROLL_INTERVAL_MS,
+        scroll_min_ms: int = _DEFAULT_SCROLL_MIN_MS,
+        scroll_max_ms: int = _DEFAULT_SCROLL_MAX_MS,
     ) -> None:
         self._mgr = browser_manager
-        self._scroll_interval_ms = scroll_interval_ms
+        self._scroll_min_ms = scroll_min_ms
+        self._scroll_max_ms = scroll_max_ms
 
     async def scrape(self, max_candidates: int = 50) -> list[RecommendCandidate]:
         """抓取推荐列表候选人.
@@ -137,7 +141,8 @@ class RecommendScraper:
         while len(collected) < max_candidates:
             prev_count = len(collected)
             await self._scroll_page(page)
-            await page.wait_for_timeout(self._scroll_interval_ms)
+            delay_ms = random.randint(self._scroll_min_ms, self._scroll_max_ms)
+            await page.wait_for_timeout(delay_ms)
 
             if len(collected) == prev_count:
                 # 没有新数据加载，停止滚动

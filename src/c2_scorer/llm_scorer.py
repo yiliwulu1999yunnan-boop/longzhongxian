@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import json
+import time
 from dataclasses import dataclass, field
 from typing import Any, Optional
 
@@ -17,6 +18,8 @@ logger = get_logger(__name__)
 _DEFAULT_MODEL = "deepseek-chat"
 _DEFAULT_TIMEOUT = 30.0
 _DEFAULT_MAX_RETRIES = 2
+_CIRCUIT_FAILURE_THRESHOLD = 5
+_CIRCUIT_RECOVERY_SECONDS = 60.0
 
 
 # ───────── 数据结构 ─────────
@@ -178,6 +181,9 @@ class LlmScorer:
             max_retries=max_retries,
         )
         self._model = model
+        # 熔断状态
+        self._failure_count = 0
+        self._circuit_open_until = 0.0
 
     async def evaluate(
         self,
@@ -197,6 +203,19 @@ class LlmScorer:
         system_prompt, user_content = render_prompt(profile, candidate_text)
         logger.info("llm_evaluate_start", position=profile.position_name, model=self._model)
 
+        # 熔断检查：连续失败超阈值后短路跳过
+        now = time.monotonic()
+        if self._failure_count >= _CIRCUIT_FAILURE_THRESHOLD:
+            if now < self._circuit_open_until:
+                logger.warning(
+                    "llm_circuit_open",
+                    failures=self._failure_count,
+                    retry_in=round(self._circuit_open_until - now, 1),
+                )
+                return LlmEvalResult(error="熔断中：LLM 连续失败，暂时跳过")
+            # 恢复期：允许一次试探
+            logger.info("llm_circuit_half_open", failures=self._failure_count)
+
         try:
             response = await self._client.chat.completions.create(
                 model=self._model,
@@ -210,11 +229,17 @@ class LlmScorer:
                 temperature=0.1,
             )
         except (APITimeoutError, APIConnectionError) as exc:
+            self._record_failure()
             logger.warning("llm_evaluate_api_failed", error=str(exc))
             return LlmEvalResult(error=f"API 调用失败: {exc}")
         except Exception as exc:
+            self._record_failure()
             logger.error("llm_evaluate_unknown_error", error=str(exc), exc_info=True)
             return LlmEvalResult(error=f"未知错误: {exc}")
+
+        # 调用成功，重置熔断计数
+        self._failure_count = 0
+        self._circuit_open_until = 0.0
 
         raw_output = response.choices[0].message.content or ""
         result = parse_llm_response(raw_output, profile)
@@ -227,3 +252,14 @@ class LlmScorer:
                 verdict=result.verdict,
             )
         return result
+
+    def _record_failure(self) -> None:
+        """记录一次失败，必要时开启熔断."""
+        self._failure_count += 1
+        if self._failure_count >= _CIRCUIT_FAILURE_THRESHOLD:
+            self._circuit_open_until = time.monotonic() + _CIRCUIT_RECOVERY_SECONDS
+            logger.warning(
+                "llm_circuit_opened",
+                failures=self._failure_count,
+                recovery_seconds=_CIRCUIT_RECOVERY_SECONDS,
+            )

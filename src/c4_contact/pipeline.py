@@ -123,6 +123,7 @@ async def run_c4_pipeline(
                 session, boss_account_id, target.candidate_id,
                 "quota_exceeded", quota_consumed=0,
             )
+            await session.commit()
             logger.warning("c4_pipeline_quota_exhausted_mid_batch")
             break
         else:
@@ -133,8 +134,10 @@ async def run_c4_pipeline(
                 detail={"result": outcome.result.value, "detail": outcome.detail},
             )
 
+        # 每次打招呼后立即 commit，避免中途失败丢失已完成记录
+        await session.commit()
+
     result.remaining_quota = await get_remaining_quota(session, boss_account_id)
-    await session.commit()
 
     # 推送结果通知
     await _send_notification(channel, wechat_userid, result)

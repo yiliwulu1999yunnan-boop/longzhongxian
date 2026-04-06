@@ -42,7 +42,7 @@ else
     echo "  虚拟环境已存在，跳过创建"
 fi
 "$VENV_DIR/bin/pip" install --quiet --upgrade pip
-"$VENV_DIR/bin/pip" install --quiet -e "$PROJECT_DIR"
+"$VENV_DIR/bin/pip" install --quiet -r "$PROJECT_DIR/requirements.lock"
 echo "  依赖安装完成"
 
 # ─── 3. 安装 Playwright 浏览器 ───

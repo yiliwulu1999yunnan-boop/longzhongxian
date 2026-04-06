@@ -33,7 +33,7 @@ async def run_c1_pipeline(
         本次新增入库的 Candidate 列表（供 C2 打分）
     """
     # 1. 抓取推荐列表
-    scraper = RecommendScraper(browser_manager, scroll_interval_ms=1500)
+    scraper = RecommendScraper(browser_manager)
     recommend_list = await scraper.scrape(max_candidates=max_candidates)
     logger.info("pipeline_scrape_done", recommend_count=len(recommend_list))
 

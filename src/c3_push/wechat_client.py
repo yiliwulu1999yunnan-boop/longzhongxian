@@ -1,5 +1,6 @@
 """企业微信应用消息客户端 — access_token 管理 + 消息发送."""
 
+import asyncio
 import time
 
 import httpx
@@ -34,6 +35,7 @@ class WechatClient:
         self._agent_id = agent_id or settings.wechat_agent_id
         self._access_token: str = ""
         self._token_expires_at: float = 0.0
+        self._token_lock = asyncio.Lock()
 
     # ───────── access_token ─────────
 
@@ -62,12 +64,17 @@ class WechatClient:
             logger.debug("wechat_token_cached")
             return self._access_token
 
-        token, expires_in = await self._fetch_access_token()
-        self._access_token = token
-        # 提前 5 分钟刷新，避免边界问题
-        self._token_expires_at = time.time() + expires_in - 300
-        logger.info("wechat_token_refreshed")
-        return self._access_token
+        async with self._token_lock:
+            # Double-check：获取锁后再次检查，避免并发重复刷新
+            if self._access_token and time.time() < self._token_expires_at:
+                return self._access_token
+
+            token, expires_in = await self._fetch_access_token()
+            self._access_token = token
+            # 提前 5 分钟刷新，避免边界问题
+            self._token_expires_at = time.time() + expires_in - 300
+            logger.info("wechat_token_refreshed")
+            return self._access_token
 
     # ───────── 发送消息 ─────────
 

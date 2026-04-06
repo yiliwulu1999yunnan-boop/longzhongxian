@@ -1,5 +1,7 @@
 """FastAPI 应用入口 — 健康检查 + 企业微信回调路由 + 异步任务调度."""
 
+import os
+import sys
 from contextlib import asynccontextmanager
 from typing import Any, AsyncIterator
 
@@ -33,6 +35,13 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
     global task_queue  # noqa: PLW0603
     settings = get_settings()
     setup_logging(settings.log_level)
+
+    # P0-2: 强制单 Worker — 多 worker 下并发抓取/打招呼会触发风控
+    workers = int(os.environ.get("WEB_CONCURRENCY", "1"))
+    if workers > 1:
+        logger.error("multi_worker_rejected", workers=workers)
+        sys.exit("致命错误: 本系统必须以单 worker 运行，检测到 WEB_CONCURRENCY=%d" % workers)
+
     task_queue = TaskQueue()
 
     # 注册指令回调 — 通过 task_queue 异步执行
