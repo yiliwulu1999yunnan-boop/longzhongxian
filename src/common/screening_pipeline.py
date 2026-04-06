@@ -114,6 +114,15 @@ async def run_screening(
     Returns:
         ScreeningResult 包含流程执行结果.
     """
+    # ── StorageState 过期提前告警 ──
+    if browser_manager.storage_state_expiry_warning:
+        logger.warning("storage_state_expiry_soon_alert", boss=boss_account_id)
+        await _notify_error(
+            channel, boss_account_id,
+            "Cookie 即将过期（≤2天），请尽快手动更新 storageState 文件",
+            yaml_path,
+        )
+
     # ── Step 1: C1 抓取 ──
     try:
         new_candidates = await run_c1_pipeline(

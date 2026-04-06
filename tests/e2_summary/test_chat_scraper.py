@@ -2,15 +2,26 @@
 
 import json
 from pathlib import Path
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
+from src.common.page_guard import PageCheckResult, PageThreat
 from src.e2_summary.chat_scraper import (
     parse_chat_api_response,
     scrape_chat,
     scrape_chat_via_dom,
 )
+
+
+@pytest.fixture(autouse=True)
+def _mock_page_guard():
+    """统一 mock page_guard，避免 AsyncMock page 的 locator 问题."""
+    with patch(
+        "src.common.page_guard.check_page_safety",
+        new=AsyncMock(return_value=PageCheckResult(threat=PageThreat.NONE)),
+    ):
+        yield
 
 _FIXTURES_DIR = Path(__file__).resolve().parents[1] / "fixtures"
 

@@ -14,8 +14,10 @@ from playwright.async_api import (
     async_playwright,
 )
 
+from src.common.circuit_breaker import CircuitBreaker
 from src.common.config import get_settings
 from src.common.logger import get_logger
+from src.common.retry import retry_with_backoff
 from src.common.storage_state import check_storage_state
 
 logger = get_logger(__name__)
@@ -106,6 +108,9 @@ class BrowserManager:
         self._browser: Browser | None = None
         self._context: BrowserContext | None = None
         self._page: Page | None = None
+        self._circuit = CircuitBreaker(
+            "browser", failure_threshold=3, recovery_seconds=120.0
+        )
 
     @property
     def storage_state_expiry_warning(self) -> bool:
@@ -200,17 +205,44 @@ class BrowserManager:
             raise RuntimeError("BrowserManager 未启动，请在 async with 块内使用")
         return self._context
 
+    @property
+    def circuit(self) -> CircuitBreaker:
+        """浏览器操作熔断器."""
+        return self._circuit
+
     async def navigate_to_recommend(self) -> Page:
-        """导航到 Boss 直聘推荐列表页."""
-        page = self.page
-        await page.goto(BOSS_RECOMMEND_URL, wait_until="domcontentloaded")
+        """导航到 Boss 直聘推荐列表页（含熔断 + 重试）."""
+        self._circuit.check()
 
-        # 页面安全检测（延迟导入避免循环依赖）
-        from src.common import page_guard
+        async def _do_navigate() -> Page:
+            page = self.page
+            await page.goto(BOSS_RECOMMEND_URL, wait_until="domcontentloaded")
 
-        result = await page_guard.check_page_safety(page)
-        if result.threat != page_guard.PageThreat.NONE:
-            raise PageBlockedError(result.threat.value, result.detail)
+            # 页面安全检测（延迟导入避免循环依赖）
+            from src.common import page_guard
+
+            result = await page_guard.check_page_safety(page)
+            if result.threat != page_guard.PageThreat.NONE:
+                raise PageBlockedError(result.threat.value, result.detail)
+
+            return page
+
+        try:
+            page = await retry_with_backoff(
+                _do_navigate,
+                max_retries=2,
+                base_delay=2.0,
+                max_delay=15.0,
+                retryable=lambda exc: not isinstance(exc, PageBlockedError),
+            )
+        except PageBlockedError:
+            self._circuit.record_failure()
+            raise
+        except Exception:
+            self._circuit.record_failure()
+            raise
+        else:
+            self._circuit.record_success()
 
         logger.info("navigated_to_recommend", url=BOSS_RECOMMEND_URL)
         return page

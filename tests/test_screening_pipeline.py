@@ -99,6 +99,7 @@ class TestScreeningPipelineSteps:
         mock_c2.return_value = _make_c2_result("推荐沟通")
 
         mock_browser = AsyncMock()
+        mock_browser.storage_state_expiry_warning = False
         mock_session = AsyncMock()
         mock_session.add = MagicMock()
         mock_channel = AsyncMock(spec=PushChannel)
@@ -135,6 +136,7 @@ class TestScreeningPipelineSteps:
         mock_c1.return_value = []
 
         mock_browser = AsyncMock()
+        mock_browser.storage_state_expiry_warning = False
         mock_session = AsyncMock()
         mock_session.add = MagicMock()
         mock_channel = AsyncMock(spec=PushChannel)
@@ -168,6 +170,7 @@ class TestScreeningPipelineErrors:
         mock_c1.side_effect = RuntimeError("Playwright 连接失败")
 
         mock_browser = AsyncMock()
+        mock_browser.storage_state_expiry_warning = False
         mock_session = AsyncMock()
         mock_session.add = MagicMock()
         mock_channel = AsyncMock(spec=PushChannel)
@@ -208,6 +211,7 @@ class TestScreeningPipelineErrors:
         ]
 
         mock_browser = AsyncMock()
+        mock_browser.storage_state_expiry_warning = False
         mock_session = AsyncMock()
         mock_session.add = MagicMock()
         mock_channel = AsyncMock(spec=PushChannel)
@@ -240,6 +244,7 @@ class TestScreeningPipelineErrors:
         mock_send.side_effect = RuntimeError("企业微信 API 异常")
 
         mock_browser = AsyncMock()
+        mock_browser.storage_state_expiry_warning = False
         mock_session = AsyncMock()
         mock_session.add = MagicMock()
         mock_channel = AsyncMock(spec=PushChannel)

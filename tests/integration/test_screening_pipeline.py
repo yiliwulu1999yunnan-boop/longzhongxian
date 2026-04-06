@@ -75,7 +75,9 @@ def _make_mock_channel() -> AsyncMock:
 
 def _make_mock_browser_manager() -> AsyncMock:
     """创建 mock BrowserManager."""
-    return AsyncMock(spec=BrowserManager)
+    mgr = AsyncMock(spec=BrowserManager)
+    mgr.storage_state_expiry_warning = False
+    return mgr
 
 
 @pytest_asyncio.fixture()

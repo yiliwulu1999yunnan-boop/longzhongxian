@@ -1,6 +1,6 @@
 """Tests for c4_contact/greeting_sender — 全部 mock，不实际访问 Boss 直聘."""
 
-from unittest.mock import AsyncMock, MagicMock
+from unittest.mock import AsyncMock, MagicMock, patch
 
 import pytest
 
@@ -10,6 +10,17 @@ from src.c4_contact.greeting_sender import (
     send_greeting,
     send_greeting_fallback,
 )
+from src.common.page_guard import PageCheckResult, PageThreat
+
+
+@pytest.fixture(autouse=True)
+def _mock_page_guard():
+    """统一 mock page_guard，避免验证码选择器与 paywall 选择器冲突."""
+    with patch(
+        "src.common.page_guard.check_page_safety",
+        new=AsyncMock(return_value=PageCheckResult(threat=PageThreat.NONE)),
+    ):
+        yield
 
 
 # ───────── Helpers ─────────

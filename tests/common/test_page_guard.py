@@ -82,23 +82,23 @@ async def test_ban_detected() -> None:
 @pytest.mark.asyncio()
 async def test_locator_exception_is_swallowed() -> None:
     """locator 抛异常时不影响后续检测."""
-    page = AsyncMock()
+    page = MagicMock()
     type(page).url = PropertyMock(return_value="https://www.zhipin.com/web/chat/recommend")
 
     call_count = 0
 
-    def locator_side_effect(selector: str) -> AsyncMock:
+    def locator_side_effect(selector: str) -> MagicMock:
         nonlocal call_count
         call_count += 1
-        loc = AsyncMock()
+        loc = MagicMock()
         if call_count == 1:
             # 第一个选择器抛异常
-            loc.count.side_effect = Exception("element detached")
+            loc.count = AsyncMock(side_effect=Exception("element detached"))
         else:
-            loc.count.return_value = 0
+            loc.count = AsyncMock(return_value=0)
         return loc
 
-    page.locator.side_effect = locator_side_effect
+    page.locator = MagicMock(side_effect=locator_side_effect)
     result = await check_page_safety(page)
     assert result.threat == PageThreat.NONE
 
