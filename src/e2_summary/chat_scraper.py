@@ -162,6 +162,19 @@ async def scrape_chat_via_api(
         # 导航到候选人聊天页面
         chat_url = f"{BOSS_CHAT_URL}?encryptGeekId={encrypt_geek_id}"
         await page.goto(chat_url, wait_until="domcontentloaded", timeout=15000)
+
+        # 页面安全检测（验证码/封禁/登录跳转）
+        from src.common.page_guard import PageThreat, check_page_safety
+
+        safety = await check_page_safety(page)
+        if safety.threat != PageThreat.NONE:
+            logger.warning(
+                "chat_page_blocked",
+                threat=safety.threat.value,
+                detail=safety.detail,
+            )
+            return None
+
         # 等待 API 响应
         await page.wait_for_timeout(3000)
     except Exception as exc:

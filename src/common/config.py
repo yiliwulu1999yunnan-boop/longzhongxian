@@ -28,6 +28,7 @@ class Settings(BaseSettings):
 
     # Boss 直聘
     storage_states_dir: str = "./storage_states"
+    cdp_endpoint: str = ""  # e.g. "http://localhost:9222"
 
     # 日志
     log_level: str = "INFO"

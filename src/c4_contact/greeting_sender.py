@@ -109,6 +109,17 @@ async def send_greeting(
         await page.goto(detail_url, wait_until="domcontentloaded", timeout=15000)
         await _random_delay(1.0, 2.0)
 
+        # 页面安全检测（验证码/封禁/登录跳转）
+        from src.common.page_guard import PageThreat, check_page_safety
+
+        safety = await check_page_safety(page)
+        if safety.threat != PageThreat.NONE:
+            return GreetingOutcome(
+                encrypt_geek_id=encrypt_geek_id,
+                result=GreetingResult.PAGE_ERROR,
+                detail=f"安全拦截: {safety.detail}",
+            )
+
         # 检查付费弹窗
         if await _check_paywall(page):
             return GreetingOutcome(
