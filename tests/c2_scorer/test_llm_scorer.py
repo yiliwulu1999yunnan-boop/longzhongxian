@@ -42,7 +42,6 @@ _GOOD_LLM_RESPONSE = json.dumps(
             {"name": "相关经验", "score": 90, "reason": "3 年面点经验"},
         ],
         "weighted_total": 75.5,
-        "verdict": "可以看看",
         "risks": ["近期换工作较频繁"],
         "highlights": ["有 3 年面点经验", "能接受凌晨上班"],
     },
@@ -96,7 +95,7 @@ def test_parse_good_response(mian_dian_shi) -> None:
     assert result.error is None
     assert len(result.dimension_scores) == 8
     assert result.weighted_total == 75.5
-    assert result.verdict == "可以看看"
+    assert result.verdict == ""  # LLM 不再返回 verdict
     assert len(result.risks) == 1
     assert len(result.highlights) == 2
 
@@ -106,7 +105,7 @@ def test_parse_response_with_code_block(mian_dian_shi) -> None:
     wrapped = f"```json\n{_GOOD_LLM_RESPONSE}\n```"
     result = parse_llm_response(wrapped, mian_dian_shi)
     assert result.error is None
-    assert result.verdict == "可以看看"
+    assert result.weighted_total == 75.5
 
 
 def test_parse_response_with_plain_code_block(mian_dian_shi) -> None:
@@ -114,7 +113,7 @@ def test_parse_response_with_plain_code_block(mian_dian_shi) -> None:
     wrapped = f"```\n{_GOOD_LLM_RESPONSE}\n```"
     result = parse_llm_response(wrapped, mian_dian_shi)
     assert result.error is None
-    assert result.verdict == "可以看看"
+    assert result.weighted_total == 75.5
 
 
 def test_parse_invalid_json(mian_dian_shi) -> None:
@@ -133,12 +132,12 @@ def test_parse_empty_response(mian_dian_shi) -> None:
 
 def test_parse_partial_json(mian_dian_shi) -> None:
     """JSON 缺少部分字段 → 缺失字段用默认值."""
-    partial = json.dumps({"verdict": "推荐沟通"})
+    partial = json.dumps({"weighted_total": 55.0})
     result = parse_llm_response(partial, mian_dian_shi)
     assert result.error is None
-    assert result.verdict == "推荐沟通"
+    assert result.weighted_total == 55.0
     assert result.dimension_scores == []
-    assert result.weighted_total == 0.0
+    assert result.verdict == ""
 
 
 def test_parse_dimension_weight_mapping(mian_dian_shi) -> None:
@@ -171,7 +170,7 @@ async def test_evaluate_success(mian_dian_shi) -> None:
         result = await scorer.evaluate(mian_dian_shi, "候选人简历内容")
 
     assert result.error is None
-    assert result.verdict == "可以看看"
+    assert result.verdict == ""  # LLM 不再返回 verdict
     assert len(result.dimension_scores) == 8
 
     # 验证 API 调用参数

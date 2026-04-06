@@ -23,7 +23,7 @@ def _load_sample_candidates() -> list[dict]:
     return json.loads((_FIXTURES_DIR / "sample_candidates.json").read_text("utf-8"))
 
 
-def _make_llm_mock_response(verdict: str, score: float) -> MagicMock:
+def _make_llm_mock_response(score: float) -> MagicMock:
     """创建模拟 LLM API 正常响应."""
     response_json = json.dumps(
         {
@@ -31,7 +31,6 @@ def _make_llm_mock_response(verdict: str, score: float) -> MagicMock:
                 {"name": "能早起/手脚麻利", "score": 80, "reason": "可以"},
             ],
             "weighted_total": score,
-            "verdict": verdict,
             "risks": ["测试风险"],
             "highlights": ["测试亮点"],
         },
@@ -135,9 +134,7 @@ async def test_pipeline_high_score_recommends(db_session) -> None:
     with patch("src.c2_scorer.llm_scorer.AsyncOpenAI") as mock_cls:
         mock_client = AsyncMock()
         # 面点师 passing_score=60, recommend_threshold=79.8
-        mock_client.chat.completions.create.return_value = _make_llm_mock_response(
-            "推荐沟通", 85.0
-        )
+        mock_client.chat.completions.create.return_value = _make_llm_mock_response(85.0)
         mock_cls.return_value = mock_client
         scorer = LlmScorer(api_key="test", base_url="http://test")
 
@@ -166,9 +163,7 @@ async def test_pipeline_mid_score_maybe(db_session) -> None:
 
     with patch("src.c2_scorer.llm_scorer.AsyncOpenAI") as mock_cls:
         mock_client = AsyncMock()
-        mock_client.chat.completions.create.return_value = _make_llm_mock_response(
-            "可以看看", 65.0
-        )
+        mock_client.chat.completions.create.return_value = _make_llm_mock_response(65.0)
         mock_cls.return_value = mock_client
         scorer = LlmScorer(api_key="test", base_url="http://test")
 

@@ -38,7 +38,7 @@ class LlmEvalResult:
 
     dimension_scores: list[DimensionScore] = field(default_factory=list)
     weighted_total: float = 0.0
-    verdict: str = ""  # 推荐沟通 / 可以看看 / 不建议
+    verdict: str = ""  # 由 score_merger 决定，LLM 不再返回此字段
     risks: list[str] = field(default_factory=list)
     highlights: list[str] = field(default_factory=list)
     raw_output: str = ""
@@ -103,10 +103,14 @@ _RESPONSE_FORMAT_INSTRUCTION = """
     {"name": "维度名称", "score": 0-100, "reason": "打分理由"}
   ],
   "weighted_total": 加权总分,
-  "verdict": "推荐沟通" 或 "可以看看" 或 "不建议",
   "risks": ["风险点1", "风险点2"],
   "highlights": ["亮点1", "亮点2"]
 }
+
+加权总分计算公式：weighted_total = Σ(各维度 score × 该维度 weight) / 100
+例如：维度A 得 80 分权重 30%，维度B 得 60 分权重 70%，则 weighted_total = (80×30 + 60×70) / 100 = 66.0
+
+注意：不需要给出最终推荐结论（推荐沟通/可以看看/不建议），只需打分和列出风险亮点。
 """
 
 

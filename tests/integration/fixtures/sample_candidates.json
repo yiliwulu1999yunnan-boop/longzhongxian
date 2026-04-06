@@ -55,7 +55,7 @@
       "job_count_last_year": 1,
       "resume_text": "之前在工厂做过操作工，想转行做餐饮"
     },
-    "candidate_text": "赵某，35岁，初中学历。之前在工厂��了3年操作工，没有餐饮经验，但表示愿意学习，能接受凌晨上班。期望薪资4500元/月。"
+    "candidate_text": "赵某，35岁，初中学历。之前在工厂做了3年操作工，没有餐饮经验，但表示愿意学习，能接受凌晨上班。期望薪资4500元/月。"
   },
   {
     "id": "sample_005",
@@ -71,5 +71,145 @@
       "resume_text": "高级面点师，五星级酒店工作经验"
     },
     "candidate_text": "陈某，30岁，大专学历。5年五星级酒店面点师经验。期望薪资12000元/月。"
+  },
+  {
+    "id": "sample_006",
+    "label": "推荐沟通",
+    "position_id": "shou_yin_yuan",
+    "candidate_info": {
+      "age": 24,
+      "education": "高中",
+      "expected_salary": 4500,
+      "work_experience_years": 2.0,
+      "job_count_last_year": 1,
+      "resume_text": "在奶茶店做了2年收银和饮品制作，习惯早起"
+    },
+    "candidate_text": "刘某，24岁，高中学历。在连锁奶茶店工作2年，主要负责收银点单和饮品制作，每天早上6点到岗，性格开朗，善于和顾客沟通，经常获得顾客好评。曾多次在门店月度销售评比中排名前三。上一份工作做了2年，因搬家离职。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_007",
+    "label": "不建议",
+    "position_id": "shou_yin_yuan",
+    "candidate_info": {
+      "age": 22,
+      "education": "高中",
+      "expected_salary": 4000,
+      "work_experience_years": 0,
+      "job_count_last_year": 0,
+      "resume_text": "刚毕业，没有工作经验，性格内向不爱说话"
+    },
+    "candidate_text": "小周，22岁，高中学历。刚毕业没有工作经验。自我描述比较内向，不太喜欢和陌生人打交道，但需要找工作赚钱。对餐饮行业没有了解，不确定能否接受凌晨上班。期望薪资4000元/月。没有明确的职业规划。"
+  },
+  {
+    "id": "sample_008",
+    "label": "推荐沟通",
+    "position_id": "zhu_pin_shi",
+    "candidate_info": {
+      "age": 32,
+      "education": "初中",
+      "expected_salary": 5000,
+      "work_experience_years": 5.0,
+      "job_count_last_year": 1,
+      "resume_text": "在米线店做了5年煮品，习惯凌晨上班"
+    },
+    "candidate_text": "杨某，32岁，初中学历。在昆明某连锁米线店工作5年，负责米线、面条、馄饨等出品，每天凌晨5点到岗备料。手脚麻利，高峰期能同时处理多份订单。上一份工作做了5年，因老板关店离职。吃苦耐劳，愿意长期稳定工作。期望薪资5000元/月。"
+  },
+  {
+    "id": "sample_009",
+    "label": "可以看看",
+    "position_id": "zhu_pin_shi",
+    "candidate_info": {
+      "age": 38,
+      "education": "初中",
+      "expected_salary": 4500,
+      "work_experience_years": 2.0,
+      "job_count_last_year": 1,
+      "resume_text": "在小吃店做过后厨，年龄偏大但有经验"
+    },
+    "candidate_text": "马某，38岁，初中学历。在小吃店做了2年后厨，主要做米线和面条。虽然年龄偏大但身体健康，能接受凌晨上班。上一份工作做了2年。家里有老人需要照顾，但表示不影响工作。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_010",
+    "label": "推荐沟通",
+    "position_id": "can_yin_xue_tu",
+    "candidate_info": {
+      "age": 23,
+      "education": "高中",
+      "expected_salary": 4500,
+      "work_experience_years": 1.0,
+      "job_count_last_year": 1,
+      "resume_text": "在快餐店工作过1年，能吃苦愿意学习"
+    },
+    "candidate_text": "孙某，23岁，高中学历。在快餐连锁店工作1年，做过后厨和收银轮岗。每天早上5点半到岗，已习惯早起。工作态度积极，愿意学习新技能，希望在餐饮行业长期发展。性格开朗，团队合作意识强。上一份工作做了1年，因想换到离家近的地方。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_011",
+    "label": "不建议",
+    "position_id": "can_yin_xue_tu",
+    "candidate_info": {
+      "age": 42,
+      "education": "初中",
+      "expected_salary": 4000,
+      "work_experience_years": 0,
+      "job_count_last_year": 1,
+      "resume_text": "在工厂做了多年，没有餐饮经验，年龄偏大"
+    },
+    "candidate_text": "老吴，42岁，初中学历。之前在工厂做了10年流水线工人，没有任何餐饮经验。因工厂搬迁失业，想尝试餐饮行业。不确定能否适应凌晨上班。期望薪资4000元/月。"
+  },
+  {
+    "id": "sample_012",
+    "label": "推荐沟通",
+    "position_id": "chu_bei_zhong_zi",
+    "candidate_info": {
+      "age": 26,
+      "education": "高中",
+      "expected_salary": 5000,
+      "work_experience_years": 3.0,
+      "job_count_last_year": 1,
+      "resume_text": "在连锁快餐店做过领班，有团队管理经验，渴望晋升"
+    },
+    "candidate_text": "钱某，26岁，高中学历。在某连锁快餐品牌工作3年，从普通员工晋升为领班，管理5人团队。熟悉排班、订货、库存管理。每天凌晨4点到岗，习惯早起。工作主动积极，渴望成为店长，对高收入有强烈追求。能接受调店安排。上一份工作做了3年。期望薪资5000元/月。"
+  },
+  {
+    "id": "sample_013",
+    "label": "可以看看",
+    "position_id": "chu_bei_zhong_zi",
+    "candidate_info": {
+      "age": 24,
+      "education": "大专",
+      "expected_salary": 4500,
+      "work_experience_years": 1.0,
+      "job_count_last_year": 1,
+      "resume_text": "餐饮服务员1年经验，有上进心但管理经验不足"
+    },
+    "candidate_text": "周某，24岁，大专学历。在餐饮店做了1年服务员，没有管理经验但表示很想学。对餐饮行业感兴趣，愿意从基层做起。能接受凌晨上班和调店。性格比较安静但做事认真。上一份工作做了1年。期望薪资4500元/月。"
+  },
+  {
+    "id": "sample_014",
+    "label": "推荐沟通",
+    "position_id": "wai_pin_chu_bei",
+    "candidate_info": {
+      "age": 29,
+      "education": "高中",
+      "expected_salary": 5500,
+      "work_experience_years": 4.0,
+      "job_count_last_year": 1,
+      "resume_text": "连锁餐饮店长2年，管理15人团队，熟悉门店运营"
+    },
+    "candidate_text": "林某，29岁，高中学历。有4年餐饮行业经验，其中2年担任连锁快餐品牌店长，管理15人团队。熟练掌握排班、订货、财务核算、人员培训等门店运营全流程。每天凌晨到岗巡检，习惯早起。因公司业务收缩离职，希望找稳定平台长期发展。能接受调店。期望薪资5500元/月。"
+  },
+  {
+    "id": "sample_015",
+    "label": "可以看看",
+    "position_id": "shou_yin_yuan",
+    "candidate_info": {
+      "age": 30,
+      "education": "初中",
+      "expected_salary": 4000,
+      "work_experience_years": 1.0,
+      "job_count_last_year": 1,
+      "resume_text": "在超市做过1年导购，有一定销售经验"
+    },
+    "candidate_text": "何某，30岁，初中学历。在超市做了1年导购，有基本的销售和客户服务经验。之前没有餐饮行业经验，但表示愿意学习。能接受早起，但没有凌晨上班经历。沟通能力一般，做事比较踏实。上一份工作做了1年。期望薪资4000元/月。"
   }
 ]
