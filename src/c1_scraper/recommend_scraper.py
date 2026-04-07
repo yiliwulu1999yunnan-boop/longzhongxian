@@ -123,10 +123,16 @@ class RecommendScraper:
                 body = await response.json()
                 parsed = parse_recommend_response(body)
                 collected.extend(parsed)
+                # 记录原始响应顶层 key 便于诊断解析失败
+                top_keys = list(body.keys()) if isinstance(body, dict) else []
+                zp_data = body.get("zpData") if isinstance(body, dict) else None
+                zp_keys = list(zp_data.keys()) if isinstance(zp_data, dict) else []
                 logger.info(
                     "recommend_response_intercepted",
                     url=url[:100],
                     candidates_found=len(parsed),
+                    top_keys=top_keys[:10],
+                    zp_data_keys=zp_keys[:10],
                 )
             except Exception:
                 logger.warning("recommend_response_parse_error", url=url[:100])

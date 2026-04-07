@@ -108,6 +108,7 @@ class BrowserManager:
         self._browser: Browser | None = None
         self._context: BrowserContext | None = None
         self._page: Page | None = None
+        self._cdp_reused_page: bool = False
         self._circuit = CircuitBreaker(
             "browser", failure_threshold=3, recovery_seconds=120.0
         )
@@ -143,8 +144,24 @@ class BrowserManager:
                 self._context = await self._browser.new_context()
                 logger.warning("cdp_no_existing_context_created_new")
 
-            self._page = await self._context.new_page()
-            logger.info("browser_cdp_connected", endpoint=self._cdp_endpoint)
+            # CDP 模式：复用已有标签页，避免 new_page() 暴露自动化指纹
+            pages = self._context.pages
+            if pages:
+                self._page = pages[0]
+                self._cdp_reused_page = True
+                logger.info(
+                    "browser_cdp_connected",
+                    endpoint=self._cdp_endpoint,
+                    reused_page=True,
+                )
+            else:
+                self._page = await self._context.new_page()
+                self._cdp_reused_page = False
+                logger.info(
+                    "browser_cdp_connected",
+                    endpoint=self._cdp_endpoint,
+                    reused_page=False,
+                )
         else:
             # Launch 模式：新开浏览器 + storageState
             self._browser = await self._playwright.chromium.launch(
@@ -171,8 +188,8 @@ class BrowserManager:
         exc_val: BaseException | None,
         exc_tb: TracebackType | None,
     ) -> None:
-        # 关闭我们创建的 tab
-        if self._page:
+        # 关闭我们创建的 tab（CDP 复用页面时不关闭，归还给用户）
+        if self._page and not self._cdp_reused_page:
             await self._page.close()
 
         if self._cdp_endpoint:
