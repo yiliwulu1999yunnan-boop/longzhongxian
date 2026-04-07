@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -30,6 +30,7 @@ class ScreeningResult:
     candidates_scored: int
     report_sent: bool
     error: str | None = None
+    number_mapping: dict[int, int] = field(default_factory=dict)
 
 
 def _candidate_to_info(detail: CandidateDetail) -> CandidateInfo:
@@ -199,6 +200,7 @@ async def run_screening(
         candidates_scraped=len(new_candidates),
         candidates_scored=len(scored),
         report_sent=report_sent,
+        number_mapping=report.number_mapping,
     )
 
 
