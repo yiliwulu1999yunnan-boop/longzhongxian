@@ -412,6 +412,26 @@ async def screening_dry_run(
         return {"status": "error", "error": str(exc)}
 
 
+# ───────── 手动触发筛选（无需企微回调）─────────
+
+
+@app.post("/screening/run")
+async def screening_run(
+    from_user: str,
+) -> dict[str, Any]:
+    """手动触发真实筛选 — C1→C2→C3 全流程，写库 + 发推送。
+
+    用于企微回调未配通前的手动触发，或运维排查。
+    """
+    logger.info("manual_screening_start", from_user=from_user)
+    try:
+        result_str = await _run_screening_task(from_user, dry_run=False)
+        return {"status": "ok", "result": result_str}
+    except Exception as exc:
+        logger.error("manual_screening_failed", from_user=from_user, error=str(exc))
+        return {"status": "error", "error": str(exc)}
+
+
 @app.get("/tasks/{task_id}")
 async def get_task_status(task_id: str) -> dict[str, Any]:
     """查询异步任务状态."""
