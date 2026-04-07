@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 from dataclasses import dataclass, field
+from typing import cast
 
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -99,6 +100,7 @@ async def run_screening(
     boss_account_id: str,
     job_id: str = "",
     yaml_path: str = "config/store_accounts.yaml",
+    dry_run: bool = False,
 ) -> ScreeningResult:
     """执行完整筛选链路：C1 抓取 → C2 打分 → C3 推送.
 
@@ -111,9 +113,10 @@ async def run_screening(
         boss_account_id: Boss 直聘账号 ID.
         job_id: 岗位 ID.
         yaml_path: 账号映射 YAML 路径.
+        dry_run: True 时抓取和评分但不写库、不发推送，用于风控测试.
 
     Returns:
-        ScreeningResult 包含流程执行结果.
+        ScreeningResult 包含流程执行结果（dry_run 时 report_sent 始终为 False）.
     """
     # ── StorageState 过期提前告警 ──
     if browser_manager.storage_state_expiry_warning:
@@ -129,11 +132,13 @@ async def run_screening(
         new_candidates = await run_c1_pipeline(
             browser_manager, session,
             boss_account_id=boss_account_id, job_id=job_id,
+            dry_run=dry_run,
         )
     except Exception as exc:
         logger.error("screening_c1_failed", error=str(exc))
-        await _notify_error(channel, boss_account_id, f"简历获取失败: {exc}", yaml_path)
-        await _log_operation(session, boss_account_id, "failed", f"C1 失败: {exc}")
+        if not dry_run:
+            await _notify_error(channel, boss_account_id, f"简历获取失败: {exc}", yaml_path)
+            await _log_operation(session, boss_account_id, "failed", f"C1 失败: {exc}")
         return ScreeningResult(
             candidates_scraped=0, candidates_scored=0,
             report_sent=False, error=f"C1 失败: {exc}",
@@ -141,60 +146,99 @@ async def run_screening(
 
     if not new_candidates:
         logger.info("screening_no_new_candidates", boss=boss_account_id)
-        await _notify_error(channel, boss_account_id, "本次未发现新候选人", yaml_path)
-        await _log_operation(session, boss_account_id, "success", "无新候选人")
+        if not dry_run:
+            await _notify_error(channel, boss_account_id, "本次未发现新候选人", yaml_path)
+            await _log_operation(session, boss_account_id, "success", "无新候选人")
         return ScreeningResult(
             candidates_scraped=0, candidates_scored=0, report_sent=True,
         )
 
     # ── Step 2: C2 打分 ──
     scored: list[ScoredCandidate] = []
-    for candidate in new_candidates:
-        detail = _detail_from_candidate(candidate)
-        if detail is None:
-            logger.warning("screening_detail_unavailable", candidate_id=candidate.id)
-            continue
 
-        try:
-            c2_result = await run_c2_pipeline(
-                candidate_info=_candidate_to_info(detail),
-                candidate_text=_candidate_to_text(detail),
+    if dry_run:
+        # Dry-run：C1 返回 CandidateDetail，直接在内存中打分
+        details: list[CandidateDetail] = cast(list[CandidateDetail], new_candidates)
+        for cdetail in details:
+            try:
+                c2_result = await run_c2_pipeline(
+                    candidate_info=_candidate_to_info(cdetail),
+                    candidate_text=_candidate_to_text(cdetail),
+                    candidate_id=0,
+                    profile=profile,
+                    llm_scorer=llm_scorer,
+                    session=session,
+                    dry_run=True,
+                )
+            except Exception as exc:
+                logger.error("screening_c2_failed", candidate_name=cdetail.geek_name, error=str(exc))
+                continue
+
+            scored.append(ScoredCandidate(
+                candidate_id=0,
+                name=cdetail.geek_name,
+                merged=c2_result.merged,
+                work_years=cdetail.work_years,
+                age=cdetail.age,
+            ))
+    else:
+        # 正常模式：C1 返回 Candidate ORM 对象
+        candidates: list[Candidate] = cast(list[Candidate], new_candidates)
+        for candidate in candidates:
+            detail: CandidateDetail | None = _detail_from_candidate(candidate)
+            if detail is None:
+                logger.warning("screening_detail_unavailable", candidate_id=candidate.id)
+                continue
+
+            try:
+                c2_result = await run_c2_pipeline(
+                    candidate_info=_candidate_to_info(detail),
+                    candidate_text=_candidate_to_text(detail),
+                    candidate_id=candidate.id,
+                    profile=profile,
+                    llm_scorer=llm_scorer,
+                    session=session,
+                )
+            except Exception as exc:
+                logger.error(
+                    "screening_c2_failed",
+                    candidate_id=candidate.id, error=str(exc),
+                )
+                continue
+
+            scored.append(ScoredCandidate(
                 candidate_id=candidate.id,
-                profile=profile,
-                llm_scorer=llm_scorer,
-                session=session,
-            )
-        except Exception as exc:
-            logger.error(
-                "screening_c2_failed",
-                candidate_id=candidate.id, error=str(exc),
-            )
-            continue
-
-        scored.append(ScoredCandidate(
-            candidate_id=candidate.id,
-            name=detail.geek_name,
-            merged=c2_result.merged,
-            work_years=detail.work_years,
-            age=detail.age,
-        ))
+                name=detail.geek_name,
+                merged=c2_result.merged,
+                work_years=detail.work_years,
+                age=detail.age,
+            ))
 
     # ── Step 3: C3 生成报告并推送 ──
     report = build_report(scored, job_name=profile.position_name)
-
-    try:
-        await send_report(
-            channel, report, boss_account_id, yaml_path=yaml_path,
-        )
-        report_sent = True
-    except Exception as exc:
-        logger.error("screening_c3_failed", error=str(exc))
-        report_sent = False
-
-    await _log_operation(
-        session, boss_account_id, "success" if report_sent else "failed",
-        f"抓取{len(new_candidates)}人，评分{len(scored)}人，推送{'成功' if report_sent else '失败'}",
+    scraped_count = len(cast(list[CandidateDetail], new_candidates)) if dry_run else len(new_candidates)
+    logger.info(
+        "screening_dry_run_report",
+        boss=boss_account_id,
+        scraped=scraped_count,
+        scored=len(scored),
+        report_preview=report.markdown[:500],
     )
+
+    report_sent = False
+    if not dry_run:
+        try:
+            await send_report(
+                channel, report, boss_account_id, yaml_path=yaml_path,
+            )
+            report_sent = True
+        except Exception as exc:
+            logger.error("screening_c3_failed", error=str(exc))
+
+        await _log_operation(
+            session, boss_account_id, "success" if report_sent else "failed",
+            f"抓取{len(new_candidates)}人，评分{len(scored)}人，推送{'成功' if report_sent else '失败'}",
+        )
 
     return ScreeningResult(
         candidates_scraped=len(new_candidates),

@@ -118,7 +118,7 @@ async def _notify_user(from_user: str, message: str) -> None:
         logger.error("notify_user_failed", from_user=from_user, error=str(exc))
 
 
-async def _run_screening_task(from_user: str) -> str:
+async def _run_screening_task(from_user: str, dry_run: bool = False) -> str:
     """筛选任务 — C1 抓取 → C2 打分 → C3 推送."""
     assert _session_factory is not None
     logger.info("screening_task_start", from_user=from_user)
@@ -146,6 +146,7 @@ async def _run_screening_task(from_user: str) -> str:
                     bm, session, channel, llm_scorer, profile,
                     boss_account_id=account.boss_account_id,
                     job_id=account.job_type,
+                    dry_run=dry_run,
                 )
                 await session.commit()
     except Exception as exc:
@@ -163,7 +164,10 @@ async def _run_screening_task(from_user: str) -> str:
         scraped=result.candidates_scraped,
         scored=result.candidates_scored,
         report_sent=result.report_sent,
+        dry_run=dry_run,
     )
+    if dry_run:
+        return "dry_run_done"
     return "screening_done"
 
 
@@ -383,7 +387,29 @@ async def wechat_callback_receive(
     return "success"
 
 
-# ───────── 任务状态查询 ─────────
+# ───────── Dry-run 筛选测试（风控测试用）─────────
+
+
+@app.post("/screening/dry-run")
+async def screening_dry_run(
+    from_user: str,
+) -> dict[str, Any]:
+    """Dry-run 筛选测试 — 完整走 C1→C2→C3 全流程，但不写库、不发推送。
+
+    用于在风控可控的情况下验证真实环境行为。
+    结果全部输出到日志，HTTP 返回结构化摘要。
+    """
+    logger.info("dry_run_start", from_user=from_user)
+    try:
+        result_str = await _run_screening_task(from_user, dry_run=True)
+        return {
+            "status": "ok",
+            "result": result_str,
+            "note": "dry_run — 无库写入，无推送发送",
+        }
+    except Exception as exc:
+        logger.error("dry_run_failed", from_user=from_user, error=str(exc))
+        return {"status": "error", "error": str(exc)}
 
 
 @app.get("/tasks/{task_id}")

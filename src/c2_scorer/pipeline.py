@@ -44,6 +44,8 @@ async def run_c2_pipeline(
     profile: JobProfile,
     llm_scorer: LlmScorer,
     session: AsyncSession,
+    *,
+    dry_run: bool = False,
 ) -> C2Result:
     """执行 C2 完整评分链路.
 
@@ -52,7 +54,7 @@ async def run_c2_pipeline(
     2. 若硬规则触发红线 → 跳过 LLM，直接合并为"不建议"
     3. 硬规则通过 → 调用 LLM 评估
     4. 合并硬规则 + LLM 结果
-    5. 存储判断快照
+    5. 存储判断快照（dry_run 跳过）
 
     Args:
         candidate_info: 候选人结构化信息（用于硬规则）.
@@ -61,9 +63,10 @@ async def run_c2_pipeline(
         profile: 岗位画像配置.
         llm_scorer: LLM 评估器实例.
         session: 数据库 async session.
+        dry_run: True 时跳过快照存储，用于风控测试.
 
     Returns:
-        C2Result 包含各阶段输出.
+        C2Result 包含各阶段输出（snapshot 字段在 dry_run 时为 None）.
     """
     logger.info("c2_pipeline_start", candidate_id=candidate_id, position=profile.position_name)
 
@@ -101,15 +104,19 @@ async def run_c2_pipeline(
         reason=merged.reason,
     )
 
-    # 5. 存储快照
-    snapshot = await save_snapshot(
-        session,
-        candidate_id=candidate_id,
-        hard_verdict=hard_verdict,
-        llm_result=llm_result,
-        merged=merged,
-        job_profile_version=profile.config_version,
-    )
+    # 5. 存储快照（dry_run 跳过）
+    snapshot: Optional[ScoringSnapshot] = None
+    if not dry_run:
+        snapshot = await save_snapshot(
+            session,
+            candidate_id=candidate_id,
+            hard_verdict=hard_verdict,
+            llm_result=llm_result,
+            merged=merged,
+            job_profile_version=profile.config_version,
+        )
+    else:
+        logger.info("c2_snapshot_skipped", candidate_id=candidate_id)
     logger.info("c2_pipeline_done", candidate_id=candidate_id, verdict=merged.final_verdict)
 
     return C2Result(

@@ -19,7 +19,8 @@ async def run_c1_pipeline(
     boss_account_id: str = "",
     job_id: str = "",
     max_candidates: int = 50,
-) -> list[Candidate]:
+    dry_run: bool = False,
+) -> list[Candidate] | list[CandidateDetail]:
     """执行 C1 完整流程：抓取 → 解析 → 入库.
 
     Args:
@@ -28,9 +29,11 @@ async def run_c1_pipeline(
         boss_account_id: 来源 Boss 账号 ID
         job_id: 关联岗位 ID
         max_candidates: 最大抓取候选人数
+        dry_run: True 时抓取解析但不写库，返回 CandidateDetail 列表而非 Candidate ORM 对象
 
     Returns:
-        本次新增入库的 Candidate 列表（供 C2 打分）
+        正常模式：本次新增入库的 Candidate ORM 对象列表（供 C2 打分）
+        dry_run 模式：CandidateDetail 列表（不写库，供后续内存中打分）
     """
     # 1. 抓取推荐列表
     scraper = RecommendScraper(browser_manager)
@@ -59,7 +62,14 @@ async def run_c1_pipeline(
         failed_count=len(recommend_list) - len(details),
     )
 
-    # 3. 去重入库
+    # 3. 去重入库（dry_run 跳过）
+    if dry_run:
+        logger.info(
+            "pipeline_dry_run_complete",
+            detail_count=len(details),
+            total_scraped=len(recommend_list),
+        )
+        return details
     new_candidates = await store_candidates(
         session,
         details,
