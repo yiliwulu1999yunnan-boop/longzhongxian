@@ -144,6 +144,20 @@ class BrowserManager:
                 self._context = await self._browser.new_context()
                 logger.warning("cdp_no_existing_context_created_new")
 
+            # CDP 反检测：覆盖自动化指纹，防止 Boss 直聘检测到 Playwright
+            await self._context.add_init_script(
+                """
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined,
+                });
+                // 补充 window.chrome 对象（真实 Chrome 始终存在）
+                if (!window.chrome) {
+                    window.chrome = { runtime: {} };
+                }
+                """
+            )
+            logger.info("cdp_stealth_script_injected")
+
             # CDP 模式：复用已有标签页，避免 new_page() 暴露自动化指纹
             pages = self._context.pages
             if pages:
@@ -233,6 +247,15 @@ class BrowserManager:
 
         async def _do_navigate() -> Page:
             page = self.page
+            # goto 前先覆盖当前页面的 webdriver 指纹（add_init_script 仅对后续导航生效）
+            await page.evaluate(
+                """
+                Object.defineProperty(navigator, 'webdriver', {
+                    get: () => undefined,
+                });
+                if (!window.chrome) { window.chrome = { runtime: {} }; }
+                """
+            )
             await page.goto(BOSS_RECOMMEND_URL, wait_until="domcontentloaded")
 
             # 页面安全检测（延迟导入避免循环依赖）
