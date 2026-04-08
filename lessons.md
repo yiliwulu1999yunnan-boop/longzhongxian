@@ -16,6 +16,7 @@
 | 2026-04-05 | 【严重】Playwright 启动新浏览器加载导出的 Cookie 访问 Boss 直聘，会被检测为异常登录，触发安全机制强制登出所有设备（包括用户正在使用的 Edge） | 绝不能用 Playwright launch() 新浏览器 + storageState 方式访问 Boss 直聘。应使用 connect_over_cdp() 连接用户已打开的浏览器，避免被识别为新设备 | ❌ |
 | 2026-04-05 | cookieStore.getAll() 无法获取 httpOnly Cookie，导出的 storageState 不完整，认证会失败 | 使用 Cookie-Editor 扩展导出完整 Cookie（包含 httpOnly） | ❌ |
 | 2026-04-07 | CDP 模式下 new_page() 创建新标签页，Boss 直聘检测到自动化指纹，强制登出账号 | CDP 模式必须复用 context.pages[0]（用户已有的标签页），不能 new_page()；退出时也不关闭复用页面 | ❌ |
+| 2026-04-08 | CDP 模式下 add_init_script 反检测 + page.goto() 仍导致 Boss 账号被登出，推荐接口 zpData 返回空 | CDP 模式下绝不能调用 page.goto()，Boss 能检测 CDP 协议层的自动化导航。正确做法：要求用户提前在浏览器中打开推荐页，代码只做 API 拦截 + 键盘滚动，不做任何导航操作 | ❌ |
 
 ## 规则
 

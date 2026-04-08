@@ -144,20 +144,6 @@ class BrowserManager:
                 self._context = await self._browser.new_context()
                 logger.warning("cdp_no_existing_context_created_new")
 
-            # CDP 反检测：覆盖自动化指纹，防止 Boss 直聘检测到 Playwright
-            await self._context.add_init_script(
-                """
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined,
-                });
-                // 补充 window.chrome 对象（真实 Chrome 始终存在）
-                if (!window.chrome) {
-                    window.chrome = { runtime: {} };
-                }
-                """
-            )
-            logger.info("cdp_stealth_script_injected")
-
             # CDP 模式：复用已有标签页，避免 new_page() 暴露自动化指纹
             pages = self._context.pages
             if pages:
@@ -242,23 +228,34 @@ class BrowserManager:
         return self._circuit
 
     async def navigate_to_recommend(self) -> Page:
-        """导航到 Boss 直聘推荐列表页（含熔断 + 重试）."""
-        self._circuit.check()
+        """获取推荐列表页面.
 
-        async def _do_navigate() -> Page:
-            page = self.page
-            # goto 前先覆盖当前页面的 webdriver 指纹（add_init_script 仅对后续导航生效）
-            await page.evaluate(
-                """
-                Object.defineProperty(navigator, 'webdriver', {
-                    get: () => undefined,
-                });
-                if (!window.chrome) { window.chrome = { runtime: {} }; }
-                """
+        CDP 模式：不导航，要求用户提前打开推荐页（避免 goto 触发反自动化检测）。
+        Launch 模式：正常 goto 导航。
+        """
+        self._circuit.check()
+        page = self.page
+
+        if self._cdp_endpoint:
+            # CDP 模式：只验证当前页面是否已在推荐页，不做任何导航
+            current_url = page.url
+            if "/web/chat/recommend" not in current_url:
+                raise PageBlockedError(
+                    "not_on_recommend_page",
+                    f"CDP 模式要求提前在浏览器中打开推荐页。"
+                    f"当前页面: {current_url}",
+                )
+            logger.info(
+                "cdp_recommend_page_verified",
+                url=current_url[:100],
             )
+            self._circuit.record_success()
+            return page
+
+        # Launch 模式：正常导航
+        async def _do_navigate() -> Page:
             await page.goto(BOSS_RECOMMEND_URL, wait_until="domcontentloaded")
 
-            # 页面安全检测（延迟导入避免循环依赖）
             from src.common import page_guard
 
             result = await page_guard.check_page_safety(page)
@@ -268,7 +265,7 @@ class BrowserManager:
             return page
 
         try:
-            page = await retry_with_backoff(
+            result_page = await retry_with_backoff(
                 _do_navigate,
                 max_retries=2,
                 base_delay=2.0,
@@ -285,4 +282,4 @@ class BrowserManager:
             self._circuit.record_success()
 
         logger.info("navigated_to_recommend", url=BOSS_RECOMMEND_URL)
-        return page
+        return result_page

@@ -161,5 +161,5 @@ class RecommendScraper:
 
     @staticmethod
     async def _scroll_page(page: Page) -> None:
-        """滚动页面触发加载更多."""
-        await page.evaluate("window.scrollTo(0, document.body.scrollHeight)")
+        """滚动页面触发加载更多（用键盘模拟，避免 evaluate 暴露自动化）."""
+        await page.keyboard.press("End")
